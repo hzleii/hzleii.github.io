@@ -33,7 +33,7 @@
                 <a class="post__title" href="{{ .Permalink | relURL }}">
                   <h2>{{ .Title }}</h2>
                 </a>
-                <div class="post__summary markdown">{{ .Summary }}</div>
+                <div class="post__summary markdown">{{ .Params.description }}</div>
               </div>
               {{ partial "metadata" . }}
             </div>

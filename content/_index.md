@@ -1,28 +1,36 @@
 ---
 title: 'DSRBLOG'
-description: 'DSRKafuU 个人博客。Web/跨平台开发、业余设计师、PC 硬件爱好者、动画党 & 主机单机游戏玩家。'
+description: '磊子的个人博客。程序员、业余设计师、PC 硬件爱好者、动画党 & 主机单机游戏玩家。'
 keywords:
-  - DSRKafuU
-  - DSRBLOG
+  - 磊子
+  - hzlei
   - 博客
 ---
 
-**Personal**
+**个人**
 
-Web/Cross-platform developer.
+磊子 目前是一名程序猿。
 
-**Keywords**
+我只知道一件事，就是我一无所知。
 
-- Tier 1 (Primary): JavaScript, TypeScript, HTML, CSS, React, Node.js
-- Tier 2 (Secondary): SolidJS, Svelte, Vue.js, Electron
+**技能**
 
-**Stats**
+- 第一层：Java, Go, Kotlin, JavaScript, HTML, CSS, Linux, SQL
+- 第二层：Spring, go-zero, PostgreSQL, Vue.js, Electron
 
-- Huge fan of Kyoto Animation since Lucky Star (2007)
-- Prefer VS Code, always working with 2-space (in any language)
-- JSX/TSX are the best syntax for mordern web development
+**兴趣爱好**
 
-**Counter**
+1. 影视：
+    - 漫威的影视作品、X-Men 系列。
+    - 科幻类，例如：[Interstellar](https://movie.douban.com/subject/1889243/)、[Prometheus](https://movie.douban.com/subject/3771562/)、[The Expanse](https://movie.douban.com/subject/25926851/)、[I, Robot](https://movie.douban.com/subject/1308843/)、[WALL·E](https://movie.douban.com/subject/2131459/)
+    - 诺兰大导演的作品，例如：[Inception](https://movie.douban.com/subject/3541415/)、[The Prestige](https://movie.douban.com/subject/1780330/)
+
+2. 音乐：民谣
+3. 其他：
+    - 喜欢小猫小狗。
+    - 此外，也热衷于欣赏和学习这方面的知识：产品设计、科学。
+
+**统计**
 
 <a href="https://github.com/dsrkafuu/moe-counter-cf#readme" target="_blank" rel="noopener">
   <img height="100" src="https://count.dsrkafuu.net/dsrkafuu:home" alt="Moe Counter CF" />
