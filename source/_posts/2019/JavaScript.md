@@ -4,8 +4,9 @@ date: 2019-07-19
 topic: js&css
 description: 'JavaScript 重难点整理，包括数据类型、执行上下文、事件循环等内容。'
 author: hzlei
-banner: /assets/post/2019/jscss/JavaScript.webp
-cover: /assets/post/2019/jscss/JavaScript.webp
+banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2019/jscss/JavaScript.webp
+cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2019/jscss/JavaScript.webp
+nav_tabs: true
 article:
   type: tech # tech/story
 poster: # 海报（可选，全图封面卡片）

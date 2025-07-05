@@ -6,8 +6,8 @@ breadcrumb: false
 nav_tabs: true
 wiki: explore
 title: 磊子
-banner: /assets/hzlei.webp
-cover: /assets/hzlei.webp
+banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/hzlei.webp
+cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/hzlei.webp
 ---
 
 

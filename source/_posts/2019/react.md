@@ -4,8 +4,9 @@ date: 2019-08-01
 description: 'React 重点整理，包括一些框架特定的内容、特性，以及与其他框架的对比等。'
 topic: react
 author: hzlei
-banner: /assets/post/2019/react/react.webp
-cover: /assets/post/2019/react/react.webp
+banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2019/react/react.webp
+cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2019/react/react.webp
+nav_tabs: true
 article:
   type: tech # tech/story
 poster: # 海报（可选，全图封面卡片）

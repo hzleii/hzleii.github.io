@@ -6,8 +6,8 @@ breadcrumb: false
 nav_tabs: true
 wiki: explore
 title: 近期动态
-banner: /assets/explore.webp
-cover: /assets/explore.webp
+banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/explore.webp
+cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/explore.webp
 ---
 
 

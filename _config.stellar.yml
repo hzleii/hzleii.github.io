@@ -15,7 +15,7 @@ inject:
 
 # 左侧边栏
 logo:
-  icon: /assets/head.png
+  icon: https://cdn.jsdelivr.net/gh/hzleii/imgs/head100x100.png
   title: 磊子
   subtitle: 'の菜园子'
 # 导航菜单

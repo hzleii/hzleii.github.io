@@ -4,8 +4,9 @@ date: 2024-03-25
 description: 'dubbo3.0 服务导入导出原理。'
 # topic: leetcode
 author: hzlei
-banner: /assets/post/2024/double-v3/index.webp
-cover: /assets/post/2024/double-v3/index.webp
+banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/double-v3/index.webp
+cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/double-v3/index.webp
+nav_tabs: true
 article:
   type: tech # tech/story
 poster: # 海报（可选，全图封面卡片）
@@ -231,7 +232,7 @@ dubbo:
 
 确定好实例信息后之后，就进行最终的应用注册了，就把实例信息存入注册中心的 `/services/应用名`，目录下：
 
-![目录](/assets/post/2024/ruoyi-rce//assets/post/2024/double-v3/1.webp)
+![目录](https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/ruoyi-rce/https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/double-v3/1.webp)
 
 可以看出 services 节点下存的是应用名，应用名的节点下存的是实例 ip 和实例 port，而 ip 和 port 这个节点中的内容就是实例的一些基本信息。
 
@@ -252,7 +253,7 @@ dubbo:
 
 在 Dubbo2.7 中就有了元数据中心，它其实就是用来减轻注册中心的压力的，Dubbo 会把服务信息完整的存一份到元数据中心，元数据中心也可以用 Zookeeper来实现，在暴露完元数据服务之后，在注册实例信息到注册中心之前，就会把 MetadataInfo 存入元数据中心，比如：
 
-![示例](/assets/post/2024/ruoyi-rce//assets/post/2024/double-v3/2.webp)
+![示例](https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/ruoyi-rce/https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/double-v3/2.webp)
 
 节点内容为：
 
@@ -378,7 +379,7 @@ Invoker 是非常核心的一个概念，也有非常多种类，比如：
 
 5. 最后将 RegistryDirectory 对象生成一个 ClusterInvoker 对象，到时候调用 ClusterInvoker 对象的 invoke() 方法就会进行负载均衡选出某一个 Invoker 进行调用；
 
-![](/assets/post/2024/ruoyi-rce/https://p6-xtjj-sign.byteimg.com/tos-cn-i-73owjymdk6/a19dcbbc57c84ddcb8f0afe04be898a8~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAg5Lqs5Lic5LqR5byA5Y-R6ICF:q75.awebp?rk3s=f64ab15b&x-expires=1731302660&x-signature=XRdz0wTjPcMe8mnWxfrK5uClToU%3D)
+![](https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/ruoyi-rce/https://p6-xtjj-sign.byteimg.com/tos-cn-i-73owjymdk6/a19dcbbc57c84ddcb8f0afe04be898a8~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAg5Lqs5Lic5LqR5byA5Y-R6ICF:q75.awebp?rk3s=f64ab15b&x-expires=1731302660&x-signature=XRdz0wTjPcMe8mnWxfrK5uClToU%3D)
 
 ## 应用级服务引入
 
@@ -468,7 +469,7 @@ private volatile ClusterInvoker<T> currentAvailableInvoker;
 
 一开始构造出来的 MigrationInvoker 对象中三个属性都为空，接下来会利用 MigrationRuleListener 来处理 MigrationInvoker 对象，也就是给这三个属性赋值。
 
-在 MigrationRuleListener 的构造方法中，会从配置中心读取 DUBBO\_SERVICEDISCOVERY\_MIGRATION 组下面的"当前应用名+.migration"的配置项，配置项为 yml 格式，对应的对象为 MigrationRule，也就是可以配置具体的迁移规则，比如：某个接口或某个应用的 MigrationStep（FORCE\_INTERFACE、APPLICATION\_FIRST、FORCE\_APPLICATION），还可以配置 threshold，表示一个阈值，比如：配置为 2，表示应用级 Invoker 数量是接口级 Invoker 数量的两倍时才使用应用级 Invoker，不然就使用接口级数量，可以参考：[cn.dubbo.apache.org/zh/docs/adv…](/assets/post/2024/ruoyi-rce/https://cn.dubbo.apache.org/zh/docs/advanced/migration-invoker/ "https://cn.dubbo.apache.org/zh/docs/advanced/migration-invoker/")
+在 MigrationRuleListener 的构造方法中，会从配置中心读取 DUBBO\_SERVICEDISCOVERY\_MIGRATION 组下面的"当前应用名+.migration"的配置项，配置项为 yml 格式，对应的对象为 MigrationRule，也就是可以配置具体的迁移规则，比如：某个接口或某个应用的 MigrationStep（FORCE\_INTERFACE、APPLICATION\_FIRST、FORCE\_APPLICATION），还可以配置 threshold，表示一个阈值，比如：配置为 2，表示应用级 Invoker 数量是接口级 Invoker 数量的两倍时才使用应用级 Invoker，不然就使用接口级数量，可以参考：[cn.dubbo.apache.org/zh/docs/adv…](https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/ruoyi-rce/https://cn.dubbo.apache.org/zh/docs/advanced/migration-invoker/ "https://cn.dubbo.apache.org/zh/docs/advanced/migration-invoker/")
 
 如果没有配置迁移规则，则会看当前应用中是否配置了 migration.step，如果没有，那就从全局配置中心读取 dubbo.application.service-discovery.migration 来获取 MigrationStep，如果也没有配置，那 MigrationStep 默认为 APPLICATION\_FIRST
 
