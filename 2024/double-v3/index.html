@@ -1,0 +1,1206 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.32.4" theme-name="Stellar" theme-version="1.32.4">
+  
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel="preconnect" href="https://gcore.jsdelivr.net" crossorigin><link rel="preconnect" href="https://unpkg.com" crossorigin><link rel="preconnect" href="https://cdn.bootcdn.net" crossorigin>
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  <title>dubbo3.0 服务导入导出原理 - 磊子</title>
+
+  
+    <meta name="description" content="dubbo3.0 服务导入导出原理。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="dubbo3.0 服务导入导出原理">
+<meta property="og:url" content="https://hzleii.github.io/2024/double-v3/index.html">
+<meta property="og:site_name" content="磊子">
+<meta property="og:description" content="dubbo3.0 服务导入导出原理。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://hzleii.github.io/assets/post/2024/ruoyi-rce/assets/post/2024/double-v3/1.webp">
+<meta property="og:image" content="https://hzleii.github.io/assets/post/2024/ruoyi-rce/assets/post/2024/double-v3/2.webp">
+<meta property="og:image" content="https://hzleii.github.io/assets/post/2024/ruoyi-rce/https:/p6-xtjj-sign.byteimg.com/tos-cn-i-73owjymdk6/a19dcbbc57c84ddcb8f0afe04be898a8~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAg5Lqs5Lic5LqR5byA5Y-R6ICF:q75.awebp?rk3s=f64ab15b&x-expires=1731302660&x-signature=XRdz0wTjPcMe8mnWxfrK5uClToU=">
+<meta property="article:published_time" content="2024-03-24T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-07-05T10:31:46.946Z">
+<meta property="article:author" content="hzleii">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hzleii.github.io/assets/post/2024/ruoyi-rce/assets/post/2024/double-v3/1.webp">
+  
+  
+  
+  
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.32.4">
+
+
+  
+
+  
+
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"hzleii","sameAs":[]},"dateCreated":"2024-03-25T00:00:00+08:00","dateModified":"2025-07-05T18:31:46+08:00","datePublished":"2024-03-25T00:00:00+08:00","description":"","headline":"dubbo3.0 服务导入导出原理","mainEntityOfPage":{"@type":"WebPage","@id":"https://hzleii.github.io/2024/double-v3/"},"publisher":{"@type":"Organization","name":"hzleii","sameAs":[]},"url":"https://hzleii.github.io/2024/double-v3/","thumbnailUrl":"/assets/post/2024/double-v3/index.webp","image":1}</script>
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/xaoxuu/favicon/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/assets/xaoxuu/favicon/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/assets/xaoxuu/favicon/favicon-16x16.png"><link rel="manifest" href="/assets/xaoxuu/favicon/site.webmanifest"><link rel="shortcut icon" href="/assets/xaoxuu/favicon/favicon.ico"><meta name="theme-color" content="#f8f8f8"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css" media="all" />
+</head>
+<body>
+
+<div class="l_body content" id="start" layout="post" type="tech" ><aside class="l_left"><div class="sidebg"></div><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><div class="icon"><img no-lazy class="icon" src="/assets/head.png" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></div><a class="title" href="/"><div class="main">磊子</div><div class="sub cap">の菜园子</div></a></div></header>
+
+<div class="nav-area">
+
+<nav class="menu dis-select"><a class="nav-item active" title="博客" href="/" style="color:#1BCDFC"><span>博客</span></a><a class="nav-item" title="专栏" href="/topic/" style="color:#3DC550"><span>专栏</span></a><a class="nav-item" title="动态" href="/explore/" style="color:#FA6400"><span>动态</span></a><a class="nav-item" title="我" href="/about/" style="color:#F44336"><span>我</span></a></nav>
+</div>
+<div class="widgets">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+<widget class="widget-wrapper recent post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2024/double-v3/"><span class="title">dubbo3.0 服务导入导出原理</span></a><a class="item title" href="/2024/ruoyi-rce/"><span class="title">若依最新版后台RCE</span></a><a class="item title" href="/2024/spring-boot-starter-security/"><span class="title">自定义Spring-boot-starter-security</span></a><a class="item title" href="/136_SingleNumber/"><span class="title">136.只出现一次的数字</span></a><a class="item title" href="/1480_RunningSumOf1dArray/"><span class="title">1480.一堆数组的动态和</span></a><a class="item title" href="/1486_XOROperation/"><span class="title">1486.数组异或操作</span></a></div></widget>
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">随机图片</span></div><div class="widget-body fs14"><p><img src="https://birdteam.net/heisi.php"></p>
+</div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top"><img class="lazy bg" data-src="/assets/post/2024/double-v3/index.webp">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2024-03-24T16:00:00.000Z">2024-03-25</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-07-05T10:31:46.946Z">2025-07-05</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>dubbo3.0 服务导入导出原理</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><p>作者：京东物流 张士欣</p>
+<p>不管是服务导出还是服务引入，都发生在应用启动过程中。<br>比如：在启动类上加上<code>@EnableDubbo</code>时，该注解上有一个<code>@DubboComponentScan</code>注解，<code>@DubboComponentScan</code> 注解Import了一个DubboComponentScanRegistrar，DubboComponentScanRegistrar中会调用<code>DubboSpringInitializer.initialize()</code>，该方法中会注册一个<code>DubboDeployApplicationListener</code>，而<code>DubboDeployApplicationListener</code>会监听Spring容器启动完成事件ContextRefreshedEvent，一旦接收到这个事件后，就会开始Dubbo的启动流程，就会执行<code>DefaultModuleDeployer</code>的<code>start()</code>进行服务导出与服务引入。</p>
+<p><strong>在启动过程中，在做完服务导出与服务引入后，还会做几件非常重要的事情：</strong></p>
+<ol>
+<li><p>导出一个应用元数据服务（就是一个 MetadataService 服务，这个服务也会注册到注册中心），或者将应用元数据注册到元数据中心；</p>
+</li>
+<li><p>生成当前应用的实例信息对象 ServiceInstance，比如：应用名、实例 ip、实例 port，并将实例信息注册到注册中心，也就是应用级注册；</p>
+</li>
+</ol>
+<h2 id="服务导出"><a href="#服务导出" class="headerlink" title="服务导出"></a>服务导出</h2><p>当在某个接口的实现类上加上 <code>@DubboService</code> 后，就表示定义了一个 Dubbo 服务，应用启动时 Dubbo 只要扫描到了 <code>@DubboService</code>，就会解析对应的类，得到服务相关的配置信息，比如：</p>
+<ol>
+<li><p>服务的类型，也就是接口，接口名就是服务名；</p>
+</li>
+<li><p>服务的具体实现类，也就是当前类；</p>
+</li>
+<li><p>服务的 version、timeout 等信息，就是 @DubboService 中所定义的各种配置；</p>
+</li>
+</ol>
+<p>解析完服务的配置信息后，就会把这些配置信息封装成为一个 ServiceConfig 对象，并调用其 export() 进行服务导出，此时一个 ServiceConfig 对象就表示一个 Dubbo 服务。</p>
+<p>而所谓的服务导出，主要就是完成三件事情：</p>
+<ol>
+<li><p>确定服务的最终参数配置；</p>
+</li>
+<li><p>按不同协议启动对应的 Server（服务暴露）；</p>
+</li>
+<li><p>将服务注册到注册中心（服务注册）；</p>
+</li>
+</ol>
+<h3 id="确定服务参数"><a href="#确定服务参数" class="headerlink" title="确定服务参数"></a>确定服务参数</h3><p>一个 Dubbo 服务，除开服务的名字，也就是接口名，还会有很多其他的属性，比如：超时时间、版本号、服务所属应用名、所支持的协议及绑定的端口等众多信息。</p>
+<p>但是，通常这些信息并不会全部在 <code>@DubboService</code> 中进行定义，比如：一个 Dubbo 服务肯定是属于某个应用的，而一个应用下可以有多个 Dubbo 服务，所以可以在应用级别定义一些通用的配置，比如协议。</p>
+<p>在 application.yml 中定义：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">dubbo:</span></span><br><span class="line"> <span class="attr">application:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">dubbo-springboot-demo-provider</span></span><br><span class="line"> <span class="attr">protocol:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">tri</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">20880</span></span><br></pre></td></tr></table></figure>
+
+<p>表示当前应用下所有的 Dubbo 服务都支持通过 tri 协议进行访问，并且访问端口为 20880，所以在进行某个服务的服务导出时，就需要将应用中的这些配置信息合并到当前服务的配置信息中。</p>
+<p>另外，除开可以通过 <code>@DubboService</code> 来配置服务，也可以在配置中心对服务进行配置，比如：在配置中心中配置：</p>
+<p><code>dubbo.service.org.apache.dubbo.samples.api.DemoService.timeout=5000</code></p>
+<p>表示当前服务的超时时间为 5s。</p>
+<p>所以，在服务导出时，也需要从配置中心获取当前服务的配置，如果在 <code>@DubboService</code> 中也定义了 timeout，那么就用配置中心的覆盖掉，配置中心的配置优先级更高。</p>
+<p>最终确定出服务的各种参数，这块内容和 Dubbo2.7 一致。</p>
+<h2 id="服务注册"><a href="#服务注册" class="headerlink" title="服务注册"></a>服务注册</h2><p>当确定好了最终的服务配置后，Dubbo 就会根据这些配置信息生成对应的服务 URL，比如：</p>
+<p><code>tri://192.168.65.221:20880/org.apache.dubbo.springboot.demo.DemoService?application=dubbo-springboot-demo-provider&amp;timeout=3000</code></p>
+<p>这个 URL 就表示了一个 Dubbo 服务，服务消费者只要能获得到这个服务 URL，就知道了关于这个 Dubbo 服务的全部信息，包括服务名、支持的协议、ip、port、各种配置。</p>
+<p>确定了服务 URL 之后，服务注册要做的事情就是把这个服务 URL 存到注册中心（比如：Zookeeper）中去，说的再简单一点，就是把这个字符串存到 Zookeeper中去，这个步骤其实是非常简单的，实现这个功能的源码在 RegistryProtocol 中的 export() 方法中，最终服务 URL 存在了 Zookeeper 的 <code>/dubbo/接口名/providers</code> 目录下。</p>
+<p>但是服务注册并不仅仅就这么简单，既然上面的这个 URL 表示一个服务，并且还包括了服务的一些配置信息，那这些配置信息如果改变了呢？比如：利用 Dubbo管理台中的动态配置功能（注意，并不是配置中心）来修改服务配置，动态配置可以应用运行过程中动态的修改服务的配置，并实时生效。</p>
+<p>如果利用动态配置功能修改了服务的参数，那此时就要重新生成服务 URL 并重新注册到注册中心，这样服务消费者就能及时的获取到服务配置信息。</p>
+<p>而对于服务提供者而言，在服务注册过程中，还需要能监听到动态配置的变化，一旦发生了变化，就根据最新的配置重新生成服务 URL，并重新注册到中心。</p>
+<h2 id="应用级注册"><a href="#应用级注册" class="headerlink" title="应用级注册"></a>应用级注册</h2><p>在 Dubbo3.0 之前，Dubbo 是接口级注册，服务注册就是把接口名以及服务配置信息注册到注册中心中，注册中心存储的数据格式大概为：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">接口名1：tri://192.168.1.221:20880/接口名1?<span class="attr">application</span>=应用名</span><br><span class="line">接口名2：tri://192.168.1.221:20880/接口名2?<span class="attr">application</span>=应用名</span><br><span class="line">接口名3：tri://192.168.1.221:20880/接口名3?<span class="attr">application</span>=应用名</span><br></pre></td></tr></table></figure>
+
+<p>key 是接口名，value 就是服务 URL，上面的内容就表示现在有一个应用，该应用下有 3 个接口，应用实例部署在 192.168.1.221，此时，如果给该应用增加一个实例，实例 ip 为192.168.1.222，那么新的实例也需要进行服务注册，会向注册中心新增 3 条数据：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">接口名1：tri://192.168.1.221:20880/接口名1?<span class="attr">application</span>=应用名</span><br><span class="line">接口名2：tri://192.168.1.221:20880/接口名2?<span class="attr">application</span>=应用名</span><br><span class="line">接口名3：tri://192.168.1.221:20880/接口名3?<span class="attr">application</span>=应用名</span><br><span class="line"></span><br><span class="line">接口名1：tri://192.168.1.222:20880/接口名1?<span class="attr">application</span>=应用名</span><br><span class="line">接口名2：tri://192.168.1.222:20880/接口名2?<span class="attr">application</span>=应用名</span><br><span class="line">接口名3：tri://192.168.1.222:20880/接口名3?<span class="attr">application</span>=应用名</span><br></pre></td></tr></table></figure>
+
+<p>可以发现，如果一个应用中有 3 个 Dubbo 服务，那么每增加一个实例，就会向注册中心增加 3 条记录，那如果一个应用中有 10 个 Dubbo 服务，那么每增加一个实例，就会向注册中心增加 10 条记录，注册中心的压力会随着应用实例的增加而剧烈增加。</p>
+<p>反过来，如果一个应用有 3 个 Dubbo 服务，5 个实例，那么注册中心就有 15 条记录，此时增加一个 Dubbo 服务，那么注册中心就会新增 5 条记录，注册中心的压力也会剧烈增加。</p>
+<p>注册中心的数据越多，数据就变化的越频繁，比如：修改服务的 timeout，那么对于注册中心和应用都需要消耗资源用来处理数据变化。</p>
+<p>所以为了降低注册中心的压力，Dubbo3.0 支持了应用级注册，同时也兼容接口级注册，用户可以逐步迁移成应用级注册，而一旦采用应用级注册，最终注册中心的数据存储就变成为：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">应用名：192.168.1.221:20880</span></span><br><span class="line"><span class="section">应用名：192.168.1.222:20880</span></span><br></pre></td></tr></table></figure>
+
+<p>表示在注册中心中，只记录应用所对应的实例信息（IP + 绑定的端口），这样只有一个应用的实例增加了，那么注册中心的数据才会增加，而不关心一个应用中到底有多少个 Dubbo 服务。</p>
+<p>这样带来的好处就是，注册中心存储的数据变少了，注册中心中数据的变化频率变小了，并且使用应用级注册，使得 Dubbo3 能实现与异构微服务体系如：Spring Cloud、Kubernetes Service 等在地址发现层面更容易互通， 为连通 Dubbo 与其他微服务体系提供可行方案。</p>
+<p>应用级注册带来了好处，但是对于 Dubbo 来说又出现了一些新的问题，比如：原本，服务消费者可以直接从注册中心就知道某个 Dubbo 服务的所有服务提供者以及相关的协议、ip、port、配置等信息，那现在注册中心上只有 ip、port，那对于服务消费者而言：服务消费者怎么知道现在它要用的某个 Dubbo 服务，也就是某个接口对应的应用是哪个呢？</p>
+<p>对于这个问题，在进行服务导出的过程中，会在 Zookeeper 中存一个映射关系，在服务导出的最后一步，在 ServiceConfig 的 exported() 方法中，会保存这个映射关系：<code>接口名：应用名</code>。这个映射关系存在 Zookeeper 的 &#x2F;dubbo&#x2F;mapping 目录下，存了这个信息后，消费者就能根据接口名找到所对应的应用名了。</p>
+<p>消费者知道了要使用的 Dubbo 服务在哪个应用，那也就能从注册中心中根据应用名查到应用的所有实例信息（ ip + port ），也就是可以发送方法调用请求了，但是在真正发送请求之前，还得知道服务的配置信息，对于消费者而言，它得知道当前要调用的这个 Dubbo 服务支持什么协议、timeout 是多少，那服务的配置信息从哪里获取呢？</p>
+<p>之前的服务配置信息是直接从注册中心就可以获取到的，就是服务 URL 后面，但是现在不行了，现在需要从服务提供者的元数据服务获取，前面提到过，在应用启动过程中会进行服务导出和服务引入，然后就会暴露一个应用元数据服务，其实这个应用元数据服务就是一个 Dubbo 服务（Dubbo 框架内置的，自己实现的 ），消费者可以调用这个服务来获取某个应用中所提供的所有 Dubbo 服务以及服务配置信息，这样也就能知道服务的配置信息了。</p>
+<p>知道了应用注册的好处，以及相关问题的解决方式，那么来看它到底是如何实现的。</p>
+<p>首先，我们可以通过配置 dubbo.application.register-mode 来控制：</p>
+<ol>
+<li><p>instance：表示只进行应用级注册；</p>
+</li>
+<li><p>interface：表示只进行接口级注册；</p>
+</li>
+<li><p>all：表示应用级注册和接口级注册都进行，默认；</p>
+</li>
+</ol>
+<p>不管是什么注册，都需要存数据到注册中心，而 Dubbo3 的源码实现中会根据所配置的注册中心生成两个 URL（不是服务 URL，可以理解为注册中心 URL，用来访问注册中心的）:</p>
+<ol>
+<li><p>service-discovery-registry:&#x2F;&#x2F;127.0.0.1:2181&#x2F;org.apache.dubbo.registry.RegistryService?application&#x3D;dubbospringboot-demoprovider&amp; dubbo&#x3D;2.0.2&amp;pid&#x3D;13072&amp;qos.enable&#x3D;false®istry&#x3D;zookeeper×tamp&#x3D;1651755501660</p>
+</li>
+<li><p>registry:&#x2F;&#x2F;127.0.0.1:2181&#x2F;org.apache.dubbo.registry.RegistryService?application&#x3D;dubbo-springboot-demoprovider&amp; dubbo&#x3D;2.0.2&amp;pid&#x3D;13072&amp;qos.enable&#x3D;false®istry&#x3D;zookeeper×tamp&#x3D;1651755501660</p>
+</li>
+</ol>
+<p>这两个 URL 只有 schema 不一样，一个是 service-discovery-registry，一个是 registry，而 registry 是 Dubbo3 之前就存在的，也就代表接口级服务注册，而service-discovery-registry 就表示应用级服务注册。</p>
+<p>在服务注册相关的源码中，当调用 RegistryProtocol 的 export() 方法处理 registry:&#x2F;&#x2F; 时，会利用 ZookeeperRegistry 把服务 URL 注册到 Zookeeper 中去，这就是接口级注册。</p>
+<p>而类似，当调用 RegistryProtocol 的 export() 方法处理 service-discovery-registry:&#x2F;&#x2F; 时，会利用 ServiceDiscoveryRegistry 来进行相关逻辑的处理，那是不是就是在这里把应用信息注册到注册中心去呢？并没有这么简单。</p>
+<ol>
+<li><p>首先，不可能每导出一个服务就进行一次应用注册，太浪费了，应用注册只要做一次就行了</p>
+</li>
+<li><p>其次，如果一个应用支持了多个端口，那么应用注册时只要挑选其中一个端口作为实例端口就可以了（该端口只要能接收到数据就行）</p>
+</li>
+<li><p>前面提到，应用启动过程中要暴露应用元数据服务，所以在此处也还是要收集当前所暴露的服务配置信息，以提供给应用元数据服务</p>
+</li>
+</ol>
+<p>所以 ServiceDiscoveryRegistry 在注册一个服务 URL 时，并不会往注册中心存数据，而只是把服务 URL 存到到一个 MetadataInfo 对象中，MetadataInfo 对象中就保存了当前应用中所有的 Dubbo 服务信息：服务名、支持的协议、绑定的端口、timeout 等。</p>
+<p>前面提到过，在应用启动的最后，才会进行应用级注册，而应用级注册就是当前的应用实例上相关的信息存入注册中心，包括：</p>
+<ol>
+<li><p>应用的名字；</p>
+</li>
+<li><p>获取应用元数据的方式；</p>
+</li>
+<li><p>当前实例的 ip 和 port；</p>
+</li>
+<li><p>当前实例支持哪些协议以及对应的 port；</p>
+</li>
+</ol>
+<p>比如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;name&quot;</span>:<span class="string">&quot;dubbo-springboot-demo-provider&quot;</span>,</span><br><span class="line">  <span class="string">&quot;id&quot;</span>:<span class="string">&quot;192.168.65.221:20882&quot;</span>,</span><br><span class="line">  <span class="string">&quot;address&quot;</span>:<span class="string">&quot;192.168.65.221&quot;</span>,</span><br><span class="line">  <span class="string">&quot;port&quot;</span>:<span class="number">20882</span>,</span><br><span class="line">  <span class="string">&quot;sslPort&quot;</span>:null,</span><br><span class="line">  <span class="string">&quot;payload&quot;</span>:&#123;</span><br><span class="line">    <span class="string">&quot;@class&quot;</span>:<span class="string">&quot;org.apache.dubbo.registry.zookeeper.ZookeeperInstance&quot;</span>,</span><br><span class="line">    <span class="string">&quot;id&quot;</span>:<span class="string">&quot;192.168.65.221:20882&quot;</span>,</span><br><span class="line">    <span class="string">&quot;name&quot;</span>:<span class="string">&quot;dubbo-springboot-demo-provider&quot;</span>,</span><br><span class="line">    <span class="string">&quot;metadata&quot;</span>:&#123;</span><br><span class="line">      <span class="string">&quot;dubbo.endpoints&quot;</span>:<span class="string">&quot;[&#123;&quot;</span>port<span class="string">&quot;:20882,&quot;</span>protocol<span class="string">&quot;:&quot;</span>dubbo<span class="string">&quot;&#125;,&#123;&quot;</span>port<span class="string">&quot;:50051,&quot;</span>protocol<span class="string">&quot;:&quot;</span>tri<span class="string">&quot;&#125;]&quot;</span>,</span><br><span class="line">      <span class="string">&quot;dubbo.metadata-service.url-params&quot;</span>:<span class="string">&quot;&#123;&quot;</span>connections<span class="string">&quot;:&quot;</span><span class="number">1</span><span class="string">&quot;,&quot;</span>version<span class="string">&quot;:&quot;</span><span class="number">1.0</span><span class="number">.0</span><span class="string">&quot;,&quot;</span>dubbo<span class="string">&quot;:&quot;</span><span class="number">2.0</span><span class="number">.2</span><span class="string">&quot;,&quot;</span>side<span class="string">&quot;:&quot;</span>provide<span class="string">r&quot;,&quot;</span>port<span class="string">&quot;:&quot;</span><span class="number">20882</span><span class="string">&quot;,&quot;</span>protocol<span class="string">&quot;:&quot;</span>dubbo<span class="string">&quot;&#125;&quot;</span>,</span><br><span class="line">      <span class="string">&quot;dubbo.metadata.revision&quot;</span>:<span class="string">&quot;65d5c7b814616ab10d32860b54781686&quot;</span>,</span><br><span class="line">      <span class="string">&quot;dubbo.metadata.storage-type&quot;</span>:<span class="string">&quot;local&quot;</span></span><br><span class="line">    &#125; </span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">&quot;registrationTimeUTC&quot;</span>:<span class="number">1654585977352</span>,</span><br><span class="line">  <span class="string">&quot;serviceType&quot;</span>:<span class="string">&quot;DYNAMIC&quot;</span>,</span><br><span class="line">  <span class="string">&quot;uriSpec&quot;</span>:null</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>一个实例上可能支持多个协议以及多个端口，那如何确定实例的 ip 和端口呢？</p>
+<p>答案是：获取 MetadataInfo 对象中保存的所有服务 URL，优先取 dubbo 协议对应 ip 和 port，没有 dubbo 协议则所有服务 URL 中的第一个 URL 的 ip 和 port。</p>
+<p>另外一个协议一般只会对应一个端口，但是如何就是对应了多个，比如：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">dubbo:</span></span><br><span class="line">  <span class="attr">application:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">dubbo-springboot-demo-provider</span></span><br><span class="line">  <span class="attr">protocols:</span></span><br><span class="line">    <span class="attr">p1:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">dubbo</span></span><br><span class="line">      <span class="attr">port:</span> <span class="number">20881</span></span><br><span class="line">    <span class="attr">p2:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">dubbo</span></span><br><span class="line">      <span class="attr">port:</span> <span class="number">20882</span></span><br><span class="line">    <span class="attr">p3:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">tri</span></span><br><span class="line">      <span class="attr">port:</span> <span class="number">50051</span></span><br></pre></td></tr></table></figure>
+
+<p>如果是这样，最终存入 endpoint 中的会保证一个协议只对应一个端口，另外那个将被忽略，最终服务消费者在进行服务引入时将会用到这个 endpoint 信息。</p>
+<p>确定好实例信息后之后，就进行最终的应用注册了，就把实例信息存入注册中心的 <code>/services/应用名</code>，目录下：</p>
+<p><img src="/assets/post/2024/ruoyi-rce/assets/post/2024/double-v3/1.webp" alt="目录"></p>
+<p>可以看出 services 节点下存的是应用名，应用名的节点下存的是实例 ip 和实例 port，而 ip 和 port 这个节点中的内容就是实例的一些基本信息。</p>
+<p>额外，我们可以配置 dubbo.metadata.storage-type，默认时 local，可以通过配置改为 remote：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">dubbo:</span></span><br><span class="line">	<span class="attr">application:</span></span><br><span class="line">		<span class="attr">name:</span> <span class="string">dubbo-springboot-demo-provider</span></span><br><span class="line">		<span class="attr">metadata-type:</span> <span class="string">remote</span></span><br></pre></td></tr></table></figure>
+
+<p>这个配置其实跟应用元数据服务有关系：</p>
+<ol>
+<li><p>如果为 local，那就会启用应用元数据服务，最终服务消费者就会调用元数据服务获取到应用元数据信息；</p>
+</li>
+<li><p>如果为 remote，那就不会暴露应用元数据服务，那么服务消费者从元数据中心获取应用元数据；</p>
+</li>
+</ol>
+<p>在 Dubbo2.7 中就有了元数据中心，它其实就是用来减轻注册中心的压力的，Dubbo 会把服务信息完整的存一份到元数据中心，元数据中心也可以用 Zookeeper来实现，在暴露完元数据服务之后，在注册实例信息到注册中心之前，就会把 MetadataInfo 存入元数据中心，比如：</p>
+<p><img src="/assets/post/2024/ruoyi-rce/assets/post/2024/double-v3/2.webp" alt="示例"></p>
+<p>节点内容为：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;app&quot;</span><span class="punctuation">:</span><span class="string">&quot;dubbo-springboot-demo-provider&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;revision&quot;</span><span class="punctuation">:</span><span class="string">&quot;64e68950e300068e6b5f8632d9fd141d&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;services&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;org.apache.dubbo.springboot.demo.HelloService:tri&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span><span class="string">&quot;org.apache.dubbo.springboot.demo.HelloService&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;protocol&quot;</span><span class="punctuation">:</span><span class="string">&quot;tri&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;path&quot;</span><span class="punctuation">:</span><span class="string">&quot;org.apache.dubbo.springboot.demo.HelloService&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;params&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;side&quot;</span><span class="punctuation">:</span><span class="string">&quot;provider&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;release&quot;</span><span class="punctuation">:</span><span class="string">&quot;&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;methods&quot;</span><span class="punctuation">:</span><span class="string">&quot;sayHello&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;deprecated&quot;</span><span class="punctuation">:</span><span class="string">&quot;false&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;dubbo&quot;</span><span class="punctuation">:</span><span class="string">&quot;2.0.2&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;interface&quot;</span><span class="punctuation">:</span><span class="string">&quot;org.apache.dubbo.springboot.demo.HelloService&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;service-name-mapping&quot;</span><span class="punctuation">:</span><span class="string">&quot;true&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;generic&quot;</span><span class="punctuation">:</span><span class="string">&quot;false&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;metadata-type&quot;</span><span class="punctuation">:</span><span class="string">&quot;remote&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;application&quot;</span><span class="punctuation">:</span><span class="string">&quot;dubbo-springboot-demo-provider&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;background&quot;</span><span class="punctuation">:</span><span class="string">&quot;false&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;dynamic&quot;</span><span class="punctuation">:</span><span class="string">&quot;true&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;anyhost&quot;</span><span class="punctuation">:</span><span class="string">&quot;true&quot;</span></span><br><span class="line">            <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;org.apache.dubbo.springboot.demo.DemoService:tri&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span><span class="string">&quot;org.apache.dubbo.springboot.demo.DemoService&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;protocol&quot;</span><span class="punctuation">:</span><span class="string">&quot;tri&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;path&quot;</span><span class="punctuation">:</span><span class="string">&quot;org.apache.dubbo.springboot.demo.DemoService&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;params&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;side&quot;</span><span class="punctuation">:</span><span class="string">&quot;provider&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;release&quot;</span><span class="punctuation">:</span><span class="string">&quot;&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;methods&quot;</span><span class="punctuation">:</span><span class="string">&quot;sayHelloStream,sayHello,sayHelloServerStream&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;deprecated&quot;</span><span class="punctuation">:</span><span class="string">&quot;false&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;dubbo&quot;</span><span class="punctuation">:</span><span class="string">&quot;2.0.2&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;interface&quot;</span><span class="punctuation">:</span><span class="string">&quot;org.apache.dubbo.springboot.demo.DemoService&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;service-name-mapping&quot;</span><span class="punctuation">:</span><span class="string">&quot;true&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;generic&quot;</span><span class="punctuation">:</span><span class="string">&quot;false&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;metadata-type&quot;</span><span class="punctuation">:</span><span class="string">&quot;remote&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;application&quot;</span><span class="punctuation">:</span><span class="string">&quot;dubbo-springboot-demo-provider&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;background&quot;</span><span class="punctuation">:</span><span class="string">&quot;false&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;dynamic&quot;</span><span class="punctuation">:</span><span class="string">&quot;true&quot;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;anyhost&quot;</span><span class="punctuation">:</span><span class="string">&quot;true&quot;</span></span><br><span class="line">            <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里面就记录了当前实例上提供了哪些服务以及对应的协议，注意并没有保存对应的端口……，所以后面服务消费者得利用实例信息中的 endpoint，因为endpoint 中记录了协议对应的端口….</p>
+<p>其实元数据中心和元数据服务提供的功能是一样的，都可以用来获取某个实例的 MetadataInfo，上面中的 UUID 表示实例编号，只不过元数据中心是集中式的，元数据服务式分散在各个提供者实例中的，如果整个微服务集群压力不大，那么效果差不多，如果微服务集群压力大，那么元数据中心的压力就大，此时单个元数据服务就更适合，所以默认也是采用的元数据服务。</p>
+<p>至此，应用级服务注册的原理就分析完了，总结一下：</p>
+<ol>
+<li><p>在导出某个 Dubbo 服务 URL 时，会把服务 URL 存入 MetadataInfo 中；</p>
+</li>
+<li><p>导出完某个 Dubbo 服务后，就会把服务接口名:应用名存入元数据中心（可以用 Zookeeper 实现）；</p>
+</li>
+<li><p>导出所有服务后，完成服务引入后；</p>
+</li>
+<li><p>判断要不要启动元数据服务，如果要就进行导出，固定使用 Dubbo 协议；</p>
+</li>
+<li><p>将 MetadataInfo 存入元数据中心；</p>
+</li>
+<li><p>确定当前实例信息（应用名、ip、port、endpoint）；</p>
+</li>
+<li><p>将实例信息存入注册中心，完成应用注册；</p>
+</li>
+</ol>
+<h2 id="服务暴露"><a href="#服务暴露" class="headerlink" title="服务暴露"></a>服务暴露</h2><p>服务暴露就是根据不同的协议启动不同的 Server，比如：dubbo 和 tri 协议启动的都是 Netty，像 Dubbo2.7 中的 http 协议启动的就是 Tomcat，这块在服务调用的时候再来分析。</p>
+<h2 id="服务引入"><a href="#服务引入" class="headerlink" title="服务引入"></a>服务引入</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@DubboReference</span></span><br><span class="line"><span class="keyword">private</span> DemoService demoService;</span><br></pre></td></tr></table></figure>
+
+<p>需要利用 <code>@DubboReference</code> 注解来引入某一个 Dubbo 服务，应用在启动过程中，进行完服务导出之后，就会进行服务引入，属性的类型就是一个 Dubbo 服务接口，而服务引入最终要做到的就是给这个属性赋值一个接口代理对象。</p>
+<p>在 Dubbo2.7 中，只有接口级服务注册，服务消费者会利用接口名从注册中心找到该服务接口所有的服务 URL，服务消费者会根据每个服务 URL 的 protocol、ip、port 生成对应的 Invoker 对象，比如生成 TripleInvoker、DubboInvoker 等，调用这些 Invoker 的 invoke() 方法就会发送数据到对应的 ip、port，生成好所有的 Invoker 对象之后，就会把这些 Invoker 对象进行封装并生成一个服务接口的代理对象，代理对象调用某个方法时，会把所调用的方法信息生成一个 Invocation 对象，并最终通过某一个 Invoker 的 invoke() 方法把 Invocation 对象发送出去，所以代理对象中的 Invoker 对象是关键，服务引入最核心的就是要生成这些 Invoker 对象。</p>
+<p>Invoker 是非常核心的一个概念，也有非常多种类，比如：</p>
+<ol>
+<li><p>TripleInvoker：表示利用 tri 协议把 Invocation 对象发送出去；</p>
+</li>
+<li><p>DubboInvoker：表示利用 dubbo 协议把 Invocation 对象发送出去；</p>
+</li>
+<li><p>ClusterInvoker：有负载均衡功能；</p>
+</li>
+<li><p>MigrationInvoker：迁移功能，Dubbo3.0 新增的</p>
+</li>
+</ol>
+<p>像 TripleInvoker 和 DubboInvoker 对应的就是具体服务提供者，包含了服务提供者的 ip 地址和端口，并且会负责跟对应的 ip 和 port 建立 Socket 连接，后续就可以基于这个 Socket 连接并按协议格式发送 Invocation 对象。</p>
+<p>比如现在引入了 DemoService 这个服务，那如果该服务支持：</p>
+<ol>
+<li><p>一个 tri 协议，绑定的端口为 20881；</p>
+</li>
+<li><p>一个 tri 协议，绑定的端口为 20882；</p>
+</li>
+<li><p>一个 dubbo 协议，绑定的端口为 20883；</p>
+</li>
+</ol>
+<p>那么在服务消费端这边，就会生成两个 TripleInvoker 和一个 DubboInvoker，代理对象执行方法时就会进行负载均衡选择其中一个 Invoker 进行调用。</p>
+<h2 id="接口级服务引入"><a href="#接口级服务引入" class="headerlink" title="接口级服务引入"></a>接口级服务引入</h2><p>在服务导出时，Dubbo3.0 默认情况下即会进行接口级注册，也会进行应用级注册，目的就是为了兼容服务消费者应用，用的还是 Dubbo2.7，用 Dubbo2.7 就只能老老实实的进行接口级服务引入。</p>
+<p>接口级服务引入核心就是要找到当前所引入的服务有哪些服务 URL，然后根据每个服务 URL 生成对应的 Invoker，流程为：</p>
+<ol>
+<li><p>首先，根据当前引入的服务接口生成一个 RegistryDirectory 对象，表示动态服务目录，用来查询并缓存服务提供者信息；</p>
+</li>
+<li><p>RegistryDirectory 对象会根据服务接口名去注册中心，比如：Zookeeper 中的 <code>/dubbo/服务接口名/providers/</code> 节点下查找所有的服务 URL；</p>
+</li>
+<li><p>根据每个服务 URL 生成对应的 Invoker 对象，并把 Invoker 对象存在 RegistryDirectory 对象的 invokers 属性中；</p>
+</li>
+<li><p>RegistryDirectory 对象也会监听 <code>/dubbo/服务接口名/providers/</code> 节点的数据变化，一旦发生了变化就要进行相应的改变；</p>
+</li>
+<li><p>最后将 RegistryDirectory 对象生成一个 ClusterInvoker 对象，到时候调用 ClusterInvoker 对象的 invoke() 方法就会进行负载均衡选出某一个 Invoker 进行调用；</p>
+</li>
+</ol>
+<p><img src="/assets/post/2024/ruoyi-rce/https:/p6-xtjj-sign.byteimg.com/tos-cn-i-73owjymdk6/a19dcbbc57c84ddcb8f0afe04be898a8~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAg5Lqs5Lic5LqR5byA5Y-R6ICF:q75.awebp?rk3s=f64ab15b&x-expires=1731302660&x-signature=XRdz0wTjPcMe8mnWxfrK5uClToU="></p>
+<h2 id="应用级服务引入"><a href="#应用级服务引入" class="headerlink" title="应用级服务引入"></a>应用级服务引入</h2><p>在 Dubbo 中，应用级服务引入，并不是指引入某个应用，这里和 SpringCloud 是有区别的，在 SpringCloud 中，服务消费者只要从注册中心找到要调用的应用的所有实例地址就可以了，但是在 Dubbo 中找到应用的实例地址还远远不够，因为在 Dubbo 中是直接使用的接口，所以在 Dubbo 中就算是应用级服务引入，最终还是得找到服务接口有哪些服务提供者。</p>
+<p>所以，对于服务消费者而言，不管是使用接口级服务引入，还是应用级服务引入，最终的结果应该得是一样的，也就是某个服务接口的提供者 Invoker 是一样的，不可能使用应用级服务引入得到的 Invoker 多一个或少一个，但是！！！，目前会有情况不一致，就是一个协议有多个端口时，比如在服务提供者应用这边支持：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">dubbo:</span></span><br><span class="line">  <span class="attr">application:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">dubbo-springboot-demo-provider</span></span><br><span class="line">  <span class="attr">protocols:</span></span><br><span class="line">    <span class="attr">p1:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">dubbo</span></span><br><span class="line">      <span class="attr">port:</span> <span class="number">20881</span></span><br><span class="line">    <span class="attr">p2:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">tri</span></span><br><span class="line">      <span class="attr">port:</span> <span class="number">20882</span></span><br><span class="line">    <span class="attr">p3:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">tri</span></span><br><span class="line">      <span class="attr">port:</span> <span class="number">50051</span></span><br></pre></td></tr></table></figure>
+
+<p>那么在消费端进行服务引入时，比如：引入 DemoService 时，接口级服务引入会生成 3 个 Invoker（2个 TripleInvoker，1个DubboInvoker），而应用级服务引入只会生成 2 个 Invoker（1个TripleInvoker，1个DubboInvoker），原因就是在进行应用级注册时是按照一个协议对应一个port存的。</p>
+<p>那既然接口级服务引入和应用级服务引入最终的结果差不多，可能就不理解了，那应用级服务引入有什么好处呢？要知道应用级服务引入和应用级服务注册是对应，服务提供者应用如果只做应用级注册，那么对应的服务消费者就只能进行应用级服务引入，好处就是前面所说的，减轻了注册中心的压力等，那么带来的影响就是服务消费者端寻找服务 URL 的逻辑更复杂了。</p>
+<p>只要找到了当前引入服务对应的服务 URL，然后生成对应的 Invoker，并最终生成一个 ClusterInvoker。</p>
+<p>在进行应用级服务引入时：</p>
+<ol>
+<li><p>首先，根据当前引入的服务接口生成一个 ServiceDiscoveryRegistryDirectory 对象，表示动态服务目录，用来查询并缓存服务提供者信息；</p>
+</li>
+<li><p>根据接口名去获取 &#x2F;dubbo&#x2F;mapping&#x2F;服务接口名节点的内容，拿到的就是该接口所对应的应用名；</p>
+</li>
+<li><p>有了应用名之后，再去获取 &#x2F;services&#x2F;应用名节点下的实例信息；</p>
+</li>
+<li><p>依次遍历每个实例，每个实例都有一个编号 revision</p>
+</li>
+<li><p>根据 metadata-type 进行判断如果是 local：则调用实例上的元数据服务获取应用元数据（MetadataInfo）；如果是 remote：则根据应用名从元数据中心获取应用元数据（MetadataInfo）；</p>
+</li>
+<li><p>获取到应用元数据之后就进行缓存，key 为 revision，MetadataInfo 对象为 value</p>
+</li>
+<li><p>这里为什么要去每个实例上获取应用的元数据信息呢？因为有可能不一样，虽然是同一个应用，但是在运行不同的实例的时候，可以指定不同的参数，比如不同的协议，不同的端口，虽然在生产上基本不会这么做，但是 Dubbo 还是支持了这种情况</p>
+</li>
+<li><p>根据从所有实例上获取到的 MetadataInfo 以及 endpoint 信息，就能知道所有实例上所有的服务 URL（注意：一个接口+一个协议+一个实例 : 对应一个服务URL）</p>
+</li>
+<li><p>拿到了这些服务 URL 之后，就根据当前引入服务的信息进行过滤，会根据引入服务的接口名+协议名，消费者可以在 @DubboReference 中指定协议，表示只使用这个协议调用当前服务，如果没有指定协议，那么就会去获取 tri、dubbo、rest 这三个协议对应的服务 URL（Dubbo3.0 默认只支持这三个协议）</p>
+</li>
+<li><p>这样，经过过滤之后，就得到了当前所引入的服务对应的服务 URL 了</p>
+</li>
+<li><p>根据每个服务 URL 生成对应的 Invoker 对象，并把 Invoker 对象存在 ServiceDiscoveryRegistryDirectory 对象的 invokers 属性中</p>
+</li>
+<li><p>最后将 ServiceDiscoveryRegistryDirectory 对象生成一个 ClusterInvoker 对象，到时候调用 ClusterInvoker 对象的 invoke() 方法就会进行负载均衡选出某一个 Invoker 进行调用</p>
+</li>
+</ol>
+<h2 id="MigrationInvoker-的生成"><a href="#MigrationInvoker-的生成" class="headerlink" title="MigrationInvoker 的生成"></a>MigrationInvoker 的生成</h2><p>上面分析了接口级服务引入和应用级服务引入，最终都是得到某个服务对应的服务提供者 Invoker，那最终进行服务调用时，到底该怎么选择呢？</p>
+<p>所以在 Dubbo3.0 中，可以配置：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># dubbo.application.service-discovery.migration 仅支持通过 -D 以及 全局配置中心 两种方式进行配置。</span></span><br><span class="line"></span><br><span class="line"><span class="attr">dubbo.application.service-discovery.migration</span>=APPLICATION_FIRST</span><br><span class="line"></span><br><span class="line"> <span class="comment"># 可选值</span></span><br><span class="line"> <span class="comment"># FORCE_INTERFACE，强制使用接口级服务引入</span></span><br><span class="line"> <span class="comment"># FORCE_APPLICATION，强制使用应用级服务引入</span></span><br><span class="line"> <span class="comment"># APPLICATION_FIRST，智能选择是接口级还是应用级，默认就是这个</span></span><br></pre></td></tr></table></figure>
+
+<p>对于前两种强制的方式，没什么特殊，就是上面走上面分析的两个过程，没有额外的逻辑，那对于 APPLICATION_FIRST 就需要有额外的逻辑了，也就是 Dubbo 要判断，当前所引入的这个服务，应该走接口级还是应用级，这该如何判断呢？</p>
+<p>事实上，在进行某个服务的服务引入时，会统一利用 InterfaceCompatibleRegistryProtocol 的 refer 来生成一个 MigrationInvoker 对象，在 MigrationInvoker 中有三个属性：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 用来记录接口级ClusterInvoker</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">volatile</span> ClusterInvoker&lt;T&gt; invoker;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 用来记录应用级的ClusterInvoker</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">volatile</span> ClusterInvoker&lt;T&gt; serviceDiscoveryInvoker; </span><br><span class="line"></span><br><span class="line"><span class="comment">// 用来记录当前使用的ClusterInvoker，要么是接口级，要么应用级</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">volatile</span> ClusterInvoker&lt;T&gt; currentAvailableInvoker; </span><br></pre></td></tr></table></figure>
+
+<p>一开始构造出来的 MigrationInvoker 对象中三个属性都为空，接下来会利用 MigrationRuleListener 来处理 MigrationInvoker 对象，也就是给这三个属性赋值。</p>
+<p>在 MigrationRuleListener 的构造方法中，会从配置中心读取 DUBBO_SERVICEDISCOVERY_MIGRATION 组下面的”当前应用名+.migration”的配置项，配置项为 yml 格式，对应的对象为 MigrationRule，也就是可以配置具体的迁移规则，比如：某个接口或某个应用的 MigrationStep（FORCE_INTERFACE、APPLICATION_FIRST、FORCE_APPLICATION），还可以配置 threshold，表示一个阈值，比如：配置为 2，表示应用级 Invoker 数量是接口级 Invoker 数量的两倍时才使用应用级 Invoker，不然就使用接口级数量，可以参考：<a href="/assets/post/2024/ruoyi-rce/https://cn.dubbo.apache.org/zh/docs/advanced/migration-invoker/" title="https:&#x2F;&#x2F;cn.dubbo.apache.org&#x2F;zh&#x2F;docs&#x2F;advanced&#x2F;migration-invoker&#x2F;">cn.dubbo.apache.org&#x2F;zh&#x2F;docs&#x2F;adv…</a></p>
+<p>如果没有配置迁移规则，则会看当前应用中是否配置了 migration.step，如果没有，那就从全局配置中心读取 dubbo.application.service-discovery.migration 来获取 MigrationStep，如果也没有配置，那 MigrationStep 默认为 APPLICATION_FIRST</p>
+<p>如果没有配置迁移规则，则会看当前应用中是否配置了 migration.threshold，如果没有配，则 threshold 默认为 -1。</p>
+<p>在应用中可以这么配置：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">dubbo:</span></span><br><span class="line">	<span class="attr">application:</span></span><br><span class="line">		<span class="attr">name:</span> <span class="string">dubbo-springboot-demo-consumer</span></span><br><span class="line">		<span class="attr">parameters:</span></span><br><span class="line">			<span class="attr">migration.step:</span> <span class="string">FORCE_APPLICATION</span></span><br><span class="line">			<span class="attr">migration.threshold:</span> <span class="number">2</span></span><br></pre></td></tr></table></figure>
+
+<p>确定了 step 和 threshold 之后，就要真正开始给 MigrationInvoker 对象中的三个属性赋值了，先根据 step 调用不同的方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span> (step) &#123;</span><br><span class="line"> <span class="keyword">case</span> APPLICATION_FIRST:</span><br><span class="line"> <span class="comment">// 先进行接口级服务引入得到对应的ClusterInvoker，并赋值给invoker属性</span></span><br><span class="line"> <span class="comment">// 再进行应用级服务引入得到对应的ClusterInvoker，并赋值给serviceDiscoveryInvoker属性</span></span><br><span class="line"> <span class="comment">// 再根据两者的数量判断到底用哪个，并且把确定的ClusterInvoker赋值给currentAvailableInvoker属性</span></span><br><span class="line"></span><br><span class="line"> migrationInvoker.migrateToApplicationFirstInvoker(newRule);</span><br><span class="line"> <span class="keyword">break</span>;</span><br><span class="line"> <span class="keyword">case</span> FORCE_APPLICATION:</span><br><span class="line"> <span class="comment">// 只进行应用级服务引入得到对应的ClusterInvoker，</span></span><br><span class="line"> <span class="comment">// 并赋值给serviceDiscoveryInvoker和currentAvailableInvoker属性</span></span><br><span class="line"></span><br><span class="line"> success = migrationInvoker.migrateToForceApplicationInvoker(newRule);</span><br><span class="line"> <span class="keyword">break</span>;</span><br><span class="line"> <span class="keyword">case</span> FORCE_INTERFACE:</span><br><span class="line"> <span class="keyword">default</span>:</span><br><span class="line"> <span class="comment">// 只进行接口级服务引入得到对应的ClusterInvoker，</span></span><br><span class="line"> <span class="comment">// 并赋值给invoker和currentAvailableInvoker属性</span></span><br><span class="line"></span><br><span class="line"> success = migrationInvoker.migrateToForceInterfaceInvoker(newRule);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里只需要分析当 step 为 APPLICATION_FIRST 时，是如何确定最终要使用的 ClusterInvoker 的。</p>
+<p>得到了接口级 ClusterInvoker 和应用级 ClusterInvoker 之后，就会利用 DefaultMigrationAddressComparator 来进行判断：</p>
+<ol>
+<li><p>如果应用级 ClusterInvoker 中没有具体的 Invoker，那就表示只能用接口级 Invoker</p>
+</li>
+<li><p>如果接口级 ClusterInvoker 中没有具体的 Invoker，那就表示只能用应用级 Invoker</p>
+</li>
+<li><p>如果应用级 ClusterInvoker 和接口级 ClusterInvoker 中都有具体的 Invoker，则获取对应的 Invoker 个数</p>
+</li>
+<li><p>如果在迁移规则和应用参数中都没有配置 threshold，那就读取全局配置中心的 dubbo.application.migration.threshold 参数，如果也没有配置，则threshold 默认为 0（不是-1了）</p>
+</li>
+<li><p>用应用级 Invoker 数量 &#x2F; 接口级 Invoker 数量，得到的结果如果大于等于 threshold，那就用应用级 ClusterInvoker，否则用接口级 ClusterInvoker</p>
+</li>
+</ol>
+<p>threshold 默认为 0，那就表示在既有应用级 Invoker 又有接口级 Invoker 的情况下，就一定会用应用级 Invoker，两个正数相除，结果肯定为正数，当然你自己可以控制 threshold，如果既有既有应用级 Invoker 又有接口级 Invoker 的情况下，你想在应用级 Invoker 的个数大于接口级 Invoker 的个数时采用应用级Invoker，那就可以把 threshold 设置为 1，表示个数相等，或者个数相除之后的结果大于 1 时用应用级 Invoker，否者用接口级 Invoker</p>
+<p>这样 MigrationInvoker 对象中的三个数据就能确定好值了，和在最终的接口代理对象执行某个方法时，就会调用 MigrationInvoker 对象的 invoke，在这个invoke 方法中会直接执行 currentAvailableInvoker 对应的 invoker 的 invoker 方法，从而进入到了接口级 ClusterInvoker 或应用级 ClusterInvoker 中，从而进行负载均衡，选择出具体的 DubboInvoer 或 TripleInvoker，完成真正的服务调用。</p>
+<h2 id="服务调用底层原理"><a href="#服务调用底层原理" class="headerlink" title="服务调用底层原理"></a>服务调用底层原理</h2><p>在 Dubbo2.7 中，默认的是 Dubbo 协议，因为 Dubbo 协议相比较于 Http1.1 而言，Dubbo 协议性能上是要更好的。</p>
+<p>但是 Dubbo 协议自己的缺点就是不通用，假如现在通过 Dubbo 协议提供了一个服务，那如果想要调用该服务就必须要求服务消费者也要支持 Dubbo 协议，比如想通过浏览器直接调用 Dubbo 服务是不行的，想通过 Nginx 调 Dubbo 服务也是不行得。</p>
+<p>而随着企业的发展，往往可能会出现公司内部使用多种技术栈，可能这个部门使用 Dubbo，另外一个部门使用 Spring Cloud，另外一个部门使用 gRPC，那此时部门之间要想相互调用服务就比较复杂了，所以需要一个通用的、性能也好的协议，这就是 Triple 协议。</p>
+<p>Triple 协议是基于 Http2 协议的，也就是在使用 Triple 协议发送数据时，会按 HTTP2 协议的格式来发送数据，而 HTTP2 协议相比较于 HTTP1 协议而言，HTTP2是 HTTP1 的升级版，完全兼容 HTTP1，而且 HTTP2 协议从设计层面就解决了 HTTP1 性能低的问题。</p>
+<p>另外，Google 公司开发的 gRPC，也基于的 HTTP2，目前 gRPC 是云原生事实上协议标准，包括 k8s&#x2F;etcd 等都支持 gRPC 协议。</p>
+<p>所以 Dubbo3.0 为了能够更方便的和 k8s 进行通信，在实现 Triple 的时候也兼容了 gRPC，也就是可以用 gPRC 的客户端调用 Dubbo3.0 所提供的 triple 服务，也可以用 triple 服务调用 gRPC 的服务。</p>
+<h3 id="Triple-的底层原理分析"><a href="#Triple-的底层原理分析" class="headerlink" title="Triple 的底层原理分析"></a>Triple 的底层原理分析</h3><p>就是因为 HTTP2 中的数据帧机制，Triple 协议才能支持 UNARY、SERVER_STREAM、BI_STREAM 三种模式。</p>
+<ol>
+<li><p>UNARY：就是最普通的，服务端只有在接收到完请求包括的所有的 HEADERS 帧和 DATA 帧之后(通过调用 onCompleted() 发送最后一个 DATA 帧)，才会处理数据，客户端也只有接收完响应包括的所有的 HEADERS 帧和 DATA 帧之后，才会处理响应结果。</p>
+</li>
+<li><p>SERVER_STREAM：服务端流，特殊的地方在于，服务端在接收完请求包括的所有的 DATA 帧之后，才会处理数据，不过在处理数据的过程中，可以多次发送响应 DATA 帧（第一个 DATA 帧发送之前会发送一个 HEADERS 帧），客户端每接收到一个响应 DATA 帧就可以直接处理该响应 DATA 帧，这个模式下，客户端只能发一次数据，但能多次处理响应 DATA 帧。</p>
+</li>
+<li><p>BI_STREAM：双端流，或者客户端流，特殊的地方在于，客户端可以控制发送多个请求 DATA 帧（第一个 DATA 帧发送之前会发送一个 HEADERS 帧），服务端会不断的接收到请求 DATA 帧并进行处理，并且及时的把处理结果作为响应 DATA 帧发送给客户端（第一个 DATA 帧发送之前会发送一个 HEADERS 帧），而客户端每接收到一个响应结果 DATA 帧也会直接处理，这种模式下，客户端和服务端都在不断的接收和发送 DATA 帧并进行处理，注意请求 HEADER 帧和响应 HEADERS 帧都只发了一个。</p>
+</li>
+</ol>
+<h3 id="Triple-请求调用和响应处理"><a href="#Triple-请求调用和响应处理" class="headerlink" title="Triple 请求调用和响应处理"></a>Triple 请求调用和响应处理</h3><p>创建一个 Stream 的前提是先得有一个 Socket 连接，所以我们得先知道 Socket 连接是在哪创建的。</p>
+<p>在服务提供者进行服务导出时，会按照协议以及对应的端口启动 Server，比如：Triple 协议就会启动 Netty 并绑定指定的端口，等待 Socket 连接，在进行服务消费者进行服务引入的过程中，会生成 TripleInvoker 对象，在构造 TripleInvoker 对象的构造方法中，会利用 ConnectionManager 创建一个 Connection 对象，而Connection 对象中包含了一个 Bootstrap 对象（Netty 中用来建立 Socket 连接的），不过以上都只是创建对象，并不会真正和服务去建立 Socket 连接，所以在生成 TripleInvoker 对象过程中不会真正去创建 Socket 连接，那什么时候创建的呢？</p>
+<p>当我们在服务消费端执行以下代码时：<code>demoService.sayHello(&quot;habit&quot;)</code></p>
+<p>demoService 是一个代理对象，在执行方法的过程中，最终会调用 TripleInvoker 的 doInvoke() 方法，在 doInvoke() 方法中，会利用 Connection 对象来判断Socket 连接是否可用，如果不可用并且没有初始化，那就会创建 Socket 连接。</p>
+<p>一个 Connection 对象就表示一个 Socket 连接，在 TripleInvoker 对象中也只有一个 Connection 对象，也就是一个 TripleInvoker 对象只对应一个 Socket 连接，这个和 DubboInvoker 不太一样，一个 DubboInvoker 中可以有多个 ExchangeClient，每个 ExchangeClient 都会与服务端创建一个 Socket 连接，所以一个DubboInvoker 可以对应多个 Socket 连接，当然多个 Socket 连接的目的就是提高并发，不过在 TripleInvoker 对象中就不需要这么来设计了，因为可以 Stream机制来提高并发。</p>
+<p>以上，我们知道了，当我们利用服务接口的代理对象执行方法时就会创建一个 Socket 连接，就算这个代理对象再次执行方法时也不会再次创建 Socket 连接了，值得注意的是，有可能两个服务接口对应的是一个 Socket 连接，举个例子。</p>
+<p>比如服务提供者应用 A，提供了 DemoService 和 HelloService 两个服务，服务消费者应用 B 引入了这两个服务，那么在服务消费者这端，这个两个接口对应的代理对象对应的 TripleInvoker 是不同的两个，但是这两个 TripleInvoker 会公用一个 Socket 连接，因为 ConnectionManager 在创建 Connection 对象时会根据服务 URL 的 address 进行缓存，后续这两个代理对象在执行方法时使用的就是同一个 Socket 连接，但是是不同的 Stream。</p>
+<p>Socket 连接创建好之后，就需要发送 Invocation 对象给服务提供者了，因为是基于的 HTTP2，所以要先创建一个 Stream，然后再通过 Stream 来发送数据。</p>
+<p>TripleInvoker 中用的是 Netty，所以最终会利用 Netty 来创建 Stream，对应的对象为 Http2StreamChannel，消费端的 TripleInvoker 最终会利用Http2StreamChannel 来发送和接收数据帧，数据帧对应的对象为 Http2Frame，它又分为 Http2DataFrame、Http2HeadersFrame 等具体类型。</p>
+<p>正常情况下，会每生成一个数据帧就会通过 Http2StreamChannel 发送出去，但是在 Triple 中有一个小小的优化，会有一个批量发送的思想，当要发送一个数据帧时，会先把数据帧放入一个 WriteQueue 中，然后会从线程池中拿到一个线程调用 WriteQueue 的 flush 方法，该方法的实现为：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">flush</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            QueuedCommand cmd;</span><br><span class="line">            <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">flushedOnce</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">            <span class="comment">// 只要队列中有元素就取出来，没有则退出while</span></span><br><span class="line">            <span class="keyword">while</span> ((cmd = queue.poll()) != <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="comment">// 把数据帧添加到Http2StreamChannel中，</span></span><br><span class="line">                <span class="comment">// 添加并不会立马发送，调用了flush才发送</span></span><br><span class="line">                cmd.run(channel);</span><br><span class="line">                i++;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// DEQUE_CHUNK_SIZE=128</span></span><br><span class="line">                <span class="comment">// 连续从队列中取到了128个数据帧就flush一次</span></span><br><span class="line">                <span class="keyword">if</span> (i == DEQUE_CHUNK_SIZE) &#123;</span><br><span class="line">                    i = <span class="number">0</span>;</span><br><span class="line">                    channel.flush();</span><br><span class="line">                    flushedOnce = <span class="literal">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// i != 0 表示从队列中取到了数据但是没满128个</span></span><br><span class="line">            <span class="comment">// 如果i=0，flushedOnce=false也flush一次</span></span><br><span class="line">            <span class="keyword">if</span> (i != <span class="number">0</span> || !flushedOnce) &#123;</span><br><span class="line">                channel.flush();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            scheduled.set(<span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 如果队列中又有数据了，则继续会递归调用flush</span></span><br><span class="line">            <span class="keyword">if</span> (!queue.isEmpty()) &#123;</span><br><span class="line">                scheduleFlush();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>总体思想是，只要向 WriteQueue 中添加一个数据帧之后，那就会尝试开启一个线程，要不要开启线程要看 CAS，比如现在有 10 个线程同时向 WriteQueue 中添加了一个数据帧，那么这 10 个线程中的某一个会 CAS 成功，其他会 CAS 失败，那么此时 CAS 成功的线程会负责从线程池中获取另外一个线程执行上面的 flush 方法，从而获取 WriteQueue 中的数据帧然后发送出去。</p>
+<p>有了底层这套设计之后，对于 TripleInvoker 而 ，它只需要把要发送的数据封装为数据帧，然后添加到 WriteQueue 中就可以了。</p>
+<p>在 TripleInvoker 的 doInvoke() 源码中，在创建完成 Socket 连接后，就会：</p>
+<ol>
+<li><p>基于 Socket 连接先构造一个 ClientCall 对象</p>
+</li>
+<li><p>根据当前调用的方法信息构造一个 RequestMetadata 对象，这个对象表示，当前调用的是哪个接口的哪个方法，并且记录了所配置的序列化方式，压缩方式，超时时间等</p>
+</li>
+<li><p>紧接着构造一个 ClientCall.Listener，这个 Listener 是用来处理响应结果的，针对不同的流式调用类型，会构造出不同的 ClientCall.Listener：UNARY：会构造出一个 UnaryClientCallListener，内部包含了一个 DeadlineFuture，DeadlineFuture 是用来控制 timeout 的SERVER_STREAM：会构造出一个 ObserverToClientCallListenerAdapter，内部包含了调用方法时传入进来的 StreamObserver 对象，最终就是由这个StreamObserver 对象来处理响应结果的BI_STREAM：和 SERVER_STREAM 一样，也会构造出来一个 ObserverToClientCallListenerAdapter</p>
+</li>
+<li><p>紧着着，就会调用 ClientCall 对象的 start 方法创建一个 Stream，并且返回一个 StreamObserver 对象</p>
+</li>
+<li><p>得到了 StreamObserver 对象后，会根据不同的流式调用类型来使用这个 StreamObserver 对象UNARY：直接调用 StreamObserver 对象的 onNext() 方法来发送方法参数，然后调用 onCompleted 方法，然后返回一个 new AsyncRpcResult(future, invocation)，future 就是 DeadlineFuture，后续会通过 DeadlineFuture 同步等待响应结果的到来，并最终把获取到的响应结果返回给业务方法。SERVER_STREAM：直接调用 StreamObserver 对象的 onNext() 方法来发送方法参数，然后调用 onCompleted 方法，然后返回一个 new AsyncRpcResult(CompletableFuture.completedFuture(new AppResponse()), invocation)，后续不会同步了，并且返回 null 给业务方法。BI_STREAM：直接返回 new AsyncRpcResult( CompletableFuture.completedFuture(new AppResponse(requestObserver)), invocation)，也不同同步等待响应结果了，而是直接把 requestObserver 对象返回给了业务方法。所以我们可以发现，不管是哪种流式调用类型，都会先创建一个 Stream，得到对应的一个 StreamObserver 对象，然后调用 StreamObserver 对象的onNext 方法来发送数据，比如发送服务接口方法的入参值，比如一个 User 对象：在发送 User 对象之前，会先发送请求头，请求头中包含了当前调用的是哪个接口、哪个方法、版本号、序列化方式、压缩方式等信息，注意请求头中会包含一些 gRPC 相关的 key，主要就是为了兼容 gRPC然后就是发送请求体然后再对 User 对象进行序列化，得到字节数组然后再压缩字节数组然后把压缩之后的字节数组以及是否压缩标记生成一个 DataQueueCommand 对象，并且把这个对象添加到 writeQueue 中去，然后执行scheduleFlush()，该方法就会开启一个线程从 writeQueue 中获取数据进行发送，发送时就会触发 DataQueueCommand 对象的 doSend 方法进行发送，该方法中会构造一个 DefaultHttp2DataFrame 对象，该对象中由两个属性 endStream，表示是不是 Stream 中的最后一帧，另外一个属性为content，表示帧携带的核心数据，该数据格式为：第一个字节记录请求体是否被压缩紧着的四个字节记录字节数组的长度后面就真正的字节数据以上是 TripleInvoker 发送数据的流程，接下来就是 TripleInvoker 接收响应数据的流程，ClientCall.Listener 就是用来监听是否接收到的响应数据的，不同的流式调用方式会对应不同的 ClientCall.Listener：UNARY：UnaryClientCallListener，内部包含了一个 DeadlineFuture，DeadlineFuture 是用来控制 timeout 的SERVER_STREAM：ObserverToClientCallListenerAdapter，内部包含了调用方法时传入进来的 StreamObserver 对象，最终就是由这个StreamObserver 对象来处理响应结果的BI_STREAM：和 SERVER_STREAM 一样，也会构造出来一个 ObserverToClientCallListenerAdapter那现在要了解的就是，如何知道某个 Stream 中有响应数据，然后触发调用 ClientCall.Listener 对象的相应的方法。要监听某个 Stream 中是否有响应数据，这个肯定是 Netty 来做的，实际上，在之前创建 Stream 时，会向 Http2StreamChannel 绑定一个TripleHttp2ClientResponseHandler，很明显这个 Handler 就是用来处理接收到的响应数据的。在 TripleHttp2ClientResponseHandler 的 channelRead0 方法中，每接收一个响应数据就会判断是 Http2HeadersFrame 还是 Http2DataFrame，然后调用 ClientTransportListener 中对应的 onHeader 方法和 onData 方法：onHeader 方法通过处理响应头，会生成一个 TriDecoder，它是用来解压并处理响应体的onData 方法会利用 TriDecoder 的 deframe() 方法来处理响应体另外如果服务提供者那边调用了 onCompleted 方法，会向客户端响应一个请求头，endStream 为 true，表示响应结束，也会触发执行 onHeader 方法，从而会调用 TriDecoder 的 close() 方法.TriDecoder 的 deframe() 方法在处理响应体数据时，会分为两个步骤：先解析前 5 个字节，先解析第 1 个字节确定该响应体是否压缩了，再解析后续 4 个字节确定响应体内容的字节长度然后再取出该长度的字节作为响应体数据，如果压缩了，那就进行解压，然后把解压之后的字节数组传递给 ClientStreamListenerImpl 的onMessage() 方法，该方法就会按对应的序列化方式进行反序列化，得到最终的对象，然后再调用到最终的 UnaryClientCallListener 或者ObserverToClientCallListenerAdapter 的 onMessage() 方法。TriDecoder 的 close() 方法最终也会调用到 UnaryClientCallListener 或者 ObserverToClientCallListenerAdapter 的 close() 方法。UnaryClientCallListener，构造它时传递了一个 DeadlineFuture 对象：onMessage() 接收到响应结果对象后，会把结果对象赋值给 appResponse 属性onClose() 会取出 appResponse 属性记录的结果对象构造出来一个 AppResponse 对象，然后调用 DeadlineFuture 的 received 方法，从而将方法调用线程接阻塞，并得到响应结果对象。ObserverToClientCallListenerAdapter，构造它时传递了一个 StreamObserver 对象：onMessage() 接收到响应结果对象后，会调用 StreamObserver 对象的 onNext()，并把结果对象传给 onNext() 方法，从触发了程序员的 onNext() 方法逻辑。onClose() 就会调用 StreamObserver 对象的 onCompleted()，或者调用 onError() 方法</p>
+</li>
+</ol>
+<h3 id="Triple-请求处理和响应结果发送"><a href="#Triple-请求处理和响应结果发送" class="headerlink" title="Triple 请求处理和响应结果发送"></a>Triple 请求处理和响应结果发送</h3><p>其实这部分内容和发送请求和处理响应是非常类似的，无非就是把视角从消费端切换到服务端，前面分析的是消费端发送和接收数据，现在要分析的是服务端接收和发送数据。</p>
+<p>消费端在创建一个 Stream 后，会生成一个对应的 StreamObserver 对象用来发送数据和一个 ClientCall.Listener 用来接收响应数据，对于服务端其实也一样，在接收到消费端创建 Stream 的命令后，也需要生成一个对应的 StreamObserver 对象用来响应数据以及一个 ServerCall.Listener 用来接收请求数据。</p>
+<p>在服务导出时，TripleProtocol 的 export 方法中会开启一个 ServerBootstrap，并绑定指定的端口，并且最重要的是，Netty 会负责接收创建 Stream 的信息，一旦就收到这个信号，就会生成一个 ChannelPipeline，并给 ChannelPipeline 绑定一个 TripleHttp2FrameServerHandler，而这个TripleHttp2FrameServerHandler 就可以用来处理 Http2HeadersFrame 和 Http2DataFrame。</p>
+<p>比如在接收到请求头后，会构造一个 ServerStream 对象，该对象有一个 ServerTransportObserver 对象，ServerTransportObserver 对象就会真正来处理请求头和请求体：</p>
+<ol>
+<li><p>onHeader() 方法，用来处理请求头比如从请求头中得到当前请求调用的是哪个服务接口，哪个方法构造一个 TriDecoder 对象，TriDecoder 对象用来处理请求体构造一个 ReflectionServerCall 对象并调用它的 doStartCall() 方法，从而生成不同的 ServerCall.ListenerUNARY：UnaryServerCallListenerSERVER_STREAM：ServerStreamServerCallListenerBI_STREAM：BiStreamServerCallListener并且在构造这些 ServerCall.Listener 时会把 ReflectionServerCall 对象传入进去，ReflectionServerCall 对象可以用来向客户端发送数据</p>
+</li>
+<li><p>onData() 方法，用来处理请求体，调用 TriDecoder 对象的 deframe 方法来处理请求体，如果是 endStream，那还会调用 TriDecoder 对象的 close 方法</p>
+</li>
+</ol>
+<h4 id="TriDecoder："><a href="#TriDecoder：" class="headerlink" title="TriDecoder："></a>TriDecoder：</h4><p>deframe()：这个方法的作用和客户端时一样的，都是先解析请求体的前 5 个字节，然后解压请全体，然后反序列化得到请求参数对象，然后调用不同的ServerCall.Listener 中的 onMessage()</p>
+<p>close()：当客户端调用 onCompleted 方法时，就表示发送数据完毕，此时会发送一个 DefaultHttp2DataFrame 并且 endStream 为 true，从而会触发服务端TriDecoder 对象的 close() 方法，从而调用不同的 ServerCall.Listener 中的 onComplete()</p>
+<h4 id="UnaryServerCallListener："><a href="#UnaryServerCallListener：" class="headerlink" title="UnaryServerCallListener："></a>UnaryServerCallListener：</h4><ol>
+<li><p>在接收到请求头时，会构造 UnaryServerCallListener 对象，没什么特殊的</p>
+</li>
+<li><p>然后接收到请求体时，请求体中的数据就是调用接口方法的入参值，比如 User 对象，那么就会调用 UnaryServerCallListener 的 onMessage() 方法，在这个方法中会把 User 对象设置到 invocation 对象中</p>
+</li>
+<li><p>当消费端调用 onCompleted() 方法，表示请求体数据发送完毕，从而触发 UnaryServerCallListener 的 onComplete() 方法，在该方法中会调用 invoke() 方法，从而执行服务方法，并得到结果，得到结果后，会调用 UnaryServerCallListener 的 onReturn() 方法，把结果通过 responseObserver 发送给消费端，并调用 responseObserver 的 onCompleted() 方法，表示响应数据发送完毕，responseObserver 是 ReflectionServerCall 对象的一个 StreamObserver 适配对象（ServerCallToObserverAdapter）。</p>
+</li>
+</ol>
+<h4 id="再来看-ServerStreamServerCallListener："><a href="#再来看-ServerStreamServerCallListener：" class="headerlink" title="再来看 ServerStreamServerCallListener："></a>再来看 ServerStreamServerCallListener：</h4><ol>
+<li><p>在接收到请求头时，会构造 ServerStreamServerCallListener 对象，没什么特殊的</p>
+</li>
+<li><p>然后接收到请求体时，请求体中的数据就是调用接口方法的入参值，比如 User 对象，那么就会调用 ServerStreamServerCallListener 的 onMessage() 方法，在这个方法中会把 User 对象以及 responseObserver 对象设置到 invocation 对象中，这是和 UnaryServerCallListener 不同的地方，UnaryServerCallListener 只会把 User 对象设置给 invocation，而 ServerStreamServerCallListener 还会把 responseObserver 对象设置进去，因为服务 端流需要这个 responseObserver 对象，服务方法拿到这个对象后就可以自己来控制如何发送响应体，并什么时候调用 onCompleted() 方法来表示响应体发送完毕。</p>
+</li>
+<li><p>当消费端调用 onCompleted() 方法，表示请求体数据发送完毕，从而触发 ServerStreamServerCallListener 的 onComplete() 方法，在该方法中会调用invoke() 方法，从而执行服务方法，从而会通过 responseObserver 对象来发送数据</p>
+</li>
+<li><p>方法执行完后，仍然会调用 ServerStreamServerCallListener的onReturn() 方法，但是个空方法</p>
+</li>
+</ol>
+<h4 id="再来看最后一个-BiStreamServerCallListener："><a href="#再来看最后一个-BiStreamServerCallListener：" class="headerlink" title="再来看最后一个 BiStreamServerCallListener："></a>再来看最后一个 BiStreamServerCallListener：</h4><ol>
+<li><p>在接收到请求头时，会构造 BiStreamServerCallListener 对象，这里比较特殊，会把 responseObserver 设置给 invocation 并执行 invoke() 方法，从而执行服务方法，并执行 onReturn() 方法，onReturn() 方法中会把服务方法的执行结果，也是一个 StreamObserver 对象，赋值给 BiStreamServerCallListener 对象的requestObserver 属性。</p>
+</li>
+<li><p>这样，在接收到请求头时，服务方法就会执行了，并且得到了一个 requestObserver，它是程序员定义的，是用来处理请求体的，另外的 responseObserver是用来发送响应体的。</p>
+</li>
+<li><p>紧接着就会收到请求体，从而触发 onMessage() 方法，该方法中会调用 requestObserver 的 onNext() 方法，这样就可以做到，服务端能实时的接收到消费端每次所发送过来的数据，并且进行处理，处理过程中，如果需要响应就可以利用 responseObserver 进行响应</p>
+</li>
+<li><p>一旦消费端那边调用了 onCompleted() 方法，那么就会触发 BiStreamServerCallListener 的 onComplete 方法，该方法中也就是调用 requestObserver 的onCompleted()，主要就触发程序员自己写的 StreamObserver 对象中的 onCompleted()，并没有针对底层的 Stream 做什么事情。</p>
+</li>
+</ol>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>不管是 Unary，还是 ServerStream，还是 BiStream，底层客户端和服务端之前都只有一个 Stream，它们三者的区别在于：</p>
+<ol>
+<li><p>Unary：通过流，将方法入参值作为请求体发送出去，而且只发送一次，服务端这边接收到请求体之后，会执行服务方法，得到结果，把结果返回给客户端，也只响应一次。</p>
+</li>
+<li><p>ServerStream：通过流，将方法入参值作为请求体发送出去，而且只发送一次，服务端这边接收到请求体之后，会执行服务方法，并且会把当前流对应的StreamObserver 对象也传给服务方法，由服务方法自己控制如何响应，响应几次，响应什么数据，什么时候响应结束，都由服务方法自己控制。</p>
+</li>
+<li><p>BiStream，通过流，客户端和服务端，都可以发送和响应多次。</p>
+</li>
+</ol>
+</article>
+<div class="article-footer">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+
+
+    <section id="share">
+      <div class="header"><span>分享文章</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://hzleii.github.io/2024/double-v3/" /></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg" /></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://hzleii.github.io/2024/double-v3/&title=dubbo3.0 服务导入导出原理 - 磊子&pics=/assets/post/2024/double-v3/index.webp&summary=dubbo3.0 服务导入导出原理。"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg" /></a><a class="social share-item email" href="mailto:?subject=dubbo3.0 服务导入导出原理 - 磊子&amp;body=https://hzleii.github.io/2024/double-v3/"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg" /></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg" /></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://hzleii.github.io/2024/double-v3/"/>
+        </div>
+        
+      </div>
+    </section>
+    </div>
+
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2024/spring-boot-starter-security/">自定义Spring-boot-starter-security</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/1486_XOROperation/">1486.数组异或操作</a></div></section></div>
+
+
+
+
+  <div class="related-wrap md-text" id="comments">
+    <section class='header cmt-title cap theme'>
+      <p>快来参与讨论吧~</p>
+
+    </section>
+    <section class='body cmt-body giscus'>
+      
+
+<svg class="loading" style="vertical-align:middle;fill:currentColor;overflow:hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg>
+
+<div id="giscus" src="https://giscus.app/client.js" data-repo="hzleii/giscus" data-repo-id="R_kgDOJUTMkA# [在此输入仓库 ID]" data-category="评论" data-category-id="DIC_kwDOJUTMkM4CVoj9" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="zh-CN" data-loading="lazy" crossorigin="anonymous"></div>
+
+    </section>
+  </div>
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">hzleii</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.32.4">Stellar 1.32.4</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="auto"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%AF%BC%E5%87%BA"><span class="toc-number">1.</span> <span class="toc-text">服务导出</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A1%AE%E5%AE%9A%E6%9C%8D%E5%8A%A1%E5%8F%82%E6%95%B0"><span class="toc-number">1.1.</span> <span class="toc-text">确定服务参数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C"><span class="toc-number">2.</span> <span class="toc-text">服务注册</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%94%E7%94%A8%E7%BA%A7%E6%B3%A8%E5%86%8C"><span class="toc-number">3.</span> <span class="toc-text">应用级注册</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E6%9A%B4%E9%9C%B2"><span class="toc-number">4.</span> <span class="toc-text">服务暴露</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%BC%95%E5%85%A5"><span class="toc-number">5.</span> <span class="toc-text">服务引入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3%E7%BA%A7%E6%9C%8D%E5%8A%A1%E5%BC%95%E5%85%A5"><span class="toc-number">6.</span> <span class="toc-text">接口级服务引入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%94%E7%94%A8%E7%BA%A7%E6%9C%8D%E5%8A%A1%E5%BC%95%E5%85%A5"><span class="toc-number">7.</span> <span class="toc-text">应用级服务引入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MigrationInvoker-%E7%9A%84%E7%94%9F%E6%88%90"><span class="toc-number">8.</span> <span class="toc-text">MigrationInvoker 的生成</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E8%B0%83%E7%94%A8%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86"><span class="toc-number">9.</span> <span class="toc-text">服务调用底层原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Triple-%E7%9A%84%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90"><span class="toc-number">9.1.</span> <span class="toc-text">Triple 的底层原理分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Triple-%E8%AF%B7%E6%B1%82%E8%B0%83%E7%94%A8%E5%92%8C%E5%93%8D%E5%BA%94%E5%A4%84%E7%90%86"><span class="toc-number">9.2.</span> <span class="toc-text">Triple 请求调用和响应处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Triple-%E8%AF%B7%E6%B1%82%E5%A4%84%E7%90%86%E5%92%8C%E5%93%8D%E5%BA%94%E7%BB%93%E6%9E%9C%E5%8F%91%E9%80%81"><span class="toc-number">9.3.</span> <span class="toc-text">Triple 请求处理和响应结果发送</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#TriDecoder%EF%BC%9A"><span class="toc-number">9.3.1.</span> <span class="toc-text">TriDecoder：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#UnaryServerCallListener%EF%BC%9A"><span class="toc-number">9.3.2.</span> <span class="toc-text">UnaryServerCallListener：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%8D%E6%9D%A5%E7%9C%8B-ServerStreamServerCallListener%EF%BC%9A"><span class="toc-number">9.3.3.</span> <span class="toc-text">再来看 ServerStreamServerCallListener：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%8D%E6%9D%A5%E7%9C%8B%E6%9C%80%E5%90%8E%E4%B8%80%E4%B8%AA-BiStreamServerCallListener%EF%BC%9A"><span class="toc-number">9.3.4.</span> <span class="toc-text">再来看最后一个 BiStreamServerCallListener：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">9.4.</span> <span class="toc-text">总结</span></a></li></ol></li></ol></div><div class="widget-footer"><a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/><path d="M7 3.338A9.95 9.95 0 0 1 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12c0-1.821.487-3.53 1.338-5"/></g></svg><span>回到顶部</span></a><a class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M8 10.5h8M8 14h5.5M17 3.338A9.95 9.95 0 0 0 12 2C6.477 2 2 6.477 2 12c0 1.6.376 3.112 1.043 4.453c.178.356.237.763.134 1.148l-.595 2.226a1.3 1.3 0 0 0 1.591 1.592l2.226-.596a1.63 1.63 0 0 1 1.149.133A9.96 9.96 0 0 0 12 22c5.523 0 10-4.477 10-10c0-1.821-.487-3.53-1.338-5"/></svg><span>参与讨论</span></a></div></widget>
+</div></aside><div class='float-panel'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+
+
+<script type="text/javascript">
+  window.canonical = {"originalHost":null,"officialHosts":["localhost"],"encoded":""};
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+    tag_plugins: {
+      chat: Object.assign({"api":"https://siteinfo.listentothewind.cn/api/v1"}),
+    }
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"skip_search":null,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+    loading: `https://api.iconify.design/eos-icons:three-dots-loading.svg?color=%231cd0fd`,
+  };
+  const deps = {
+    jquery: `https://gcore.jsdelivr.net/npm/jquery@3.7/dist/jquery.min.js`,
+    marked: `https://gcore.jsdelivr.net/npm/marked@13.0/lib/marked.umd.min.js`,
+    lazyload: `/%5Bobject%20Object%5D`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  
+  function RunItem() {
+    this.list = []; // 存放回调函数
+    this.start = () => {
+      for (var i = 0; i < this.list.length; i++) {
+        this.list[i].run();
+      }
+    };
+    this.push = (fn, name, setRequestAnimationFrame = true) => {
+      let myfn = fn
+      if (setRequestAnimationFrame) {
+        myfn = () => {
+          utils.requestAnimationFrame(fn)
+        }
+      }
+      var f = new Item(myfn, name);
+      this.list.push(f);
+    };
+    this.remove = (name) => {
+      for (let index = 0; index < this.list.length; index++) {
+        const e = this.list[index];
+        if (e.name == name) {
+          this.list.splice(index, 1);
+        }
+      }
+    }
+    // 构造一个可以run的对象
+    function Item(fn, name) {
+      // 函数名称
+      this.name = name || fn.name;
+      // run方法
+      this.run = () => {
+        try {
+          fn()
+        } catch (error) {
+          console.log(error);
+        }
+      };
+    }
+  }
+
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')) {
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function () {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0 && onFailure) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function (response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response;
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function (data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function (error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              if (onFailure) {
+                onFailure();
+              }
+            }
+          });
+        });
+      }
+      req();
+    },
+    /********************** requestAnimationFrame ********************************/
+    // 1、requestAnimationFrame 会把每一帧中的所有 DOM 操作集中起来，在一次重绘或回流中就完成，并且重绘或回流的时间间隔紧紧跟随浏览器的刷新频率，一般来说，这个频率为每秒60帧。
+    // 2、在隐藏或不可见的元素中，requestAnimationFrame 将不会进行重绘或回流，这当然就意味着更少的的 cpu，gpu 和内存使用量。
+    requestAnimationFrame: (fn) => {
+      if (!window.requestAnimationFrame) {
+        window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame;
+      }
+      window.requestAnimationFrame(fn)
+    },
+    dark: {},
+  };
+
+  // utils.dark.mode 当前模式 dark or light
+  // utils.dark.toggle() 暗黑模式触发器
+  // utils.dark.push(callBack[,"callBackName"]) 传入触发器回调函数
+  utils.dark.method = {
+    toggle: new RunItem(),
+  };
+  utils.dark = Object.assign(utils.dark, {
+    push: utils.dark.method.toggle.push,
+  });
+</script>
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+<script async src="https://gcore.jsdelivr.net/npm/vanilla-lazyload@19.1/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy, .lazyload",
+    callback_loaded: (el) => {
+      el.classList.add('loaded');
+      const wrapper = el.closest('.lazy-box');
+      const icon = wrapper?.querySelector('.lazy-icon');
+      if (icon) icon.remove();
+    }
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+
+  window.wrapLazyloadImages = (container) => {
+    if (typeof container === 'string') {
+      container = document.querySelector(container);
+    }
+    if (!container) return;
+    
+    const images = container.querySelectorAll('img');
+    images.forEach((img) => {
+      if (img.classList.contains('lazy')) return;
+
+      const src = img.getAttribute('src');
+      if (!src) return;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'lazy-box';
+
+      const newImg = img.cloneNode();
+      newImg.removeAttribute('src');
+      newImg.setAttribute('data-src', src);
+      newImg.classList.add('lazy');
+
+      const icon = document.createElement('div');
+      icon.className = 'lazy-icon';
+      if (def.loading) {
+        icon.style.backgroundImage = `url("${def.loading}")`;
+      }
+
+      wrapper.appendChild(newImg);
+      wrapper.appendChild(icon);
+
+      img.replaceWith(wrapper);
+    });
+
+    // 通知 LazyLoad 更新
+    if (window.lazyLoadInstance?.update) {
+      window.lazyLoadInstance.update();
+    }
+  }
+  
+</script>
+
+<!-- required -->
+<script src="/js/main.js?v=1.32.4" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    // applyThemeToGiscus(theme)
+  }
+
+  // FIXME: 这会导致无法使用 preferred_color_scheme 以外的主题
+  const applyThemeToGiscus = (theme) => {
+    // theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+    utils.dark.mode = newTheme === 'auto' ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : newTheme;
+    utils.dark.method.toggle.start();
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    } else {
+      utils.dark.mode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    utils.dark.method.toggle.start();
+  })()
+</script>
+
+
+<!-- optional -->
+
+  <script type="module">
+  const el = document.querySelector('#comments #giscus');
+  util.viewportLazyload(el, load_discus, false);
+
+  function load_discus() {
+    if (!el) return;
+    try {
+        el.innerHTML = '';
+      } catch (error) {
+        console.error(error);
+      }
+      const script = document.createElement('script');
+      script.async = true;
+      for (const key of Object.keys(el.attributes)) {
+        const attr = el.attributes[key];
+        if (['class', 'id'].includes(attr.name) === false) {
+          script.setAttribute(attr.name, attr.value);
+        }
+      }
+      el.appendChild(script);
+  }
+</script>
+
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"friends_and_posts":{"js":"/js/services/friends_and_posts.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"},"voice":{"js":"/js/plugins/voice.js"},"video":{"js":"/js/plugins/video.js"},"download-file":{"js":"/js/plugins/download-file.js"},"twikoo":{"js":"/js/services/twikoo_latest_comment.js"},"waline":{"js":"/js/services/waline_latest_comment.js"},"artalk":{"js":"/js/services/artalk_latest_comment.js"},"giscus":{"js":"/js/services/giscus_latest_comment.js"},"contributors":{"edit_this_page":{"_posts/":null,"wiki/stellar/":"https://github.com/xaoxuu/hexo-theme-stellar-docs/blob/main/"},"js":"/js/services/contributors.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else if (id == 'voice') {
+        ctx.voiceAudios = document.querySelectorAll('.voice>audio');
+        if (ctx.voiceAudios?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            createVoiceDom(ctx.voiceAudios);
+          });
+        }
+      } else if (id == 'video') {
+        ctx.videos = document.querySelectorAll('.video>video');
+        if (ctx.videos?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            videoEvents(ctx.videos);
+          });
+        }
+      } else if (id == 'download-file') {
+        ctx.files = document.querySelectorAll('.file');
+        if (ctx.files?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            downloadFileEvent(ctx.files);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+
+    // chat iphone time
+    let phoneTimes = document.querySelectorAll('.chat .status-bar .time');
+
+    if (phoneTimes.length > 0) {
+      NowTime();
+      var date = new Date();
+      var sec = date.getSeconds();
+      var firstAdjustInterval = setInterval(firstAdjustTime, 1000 * (60 - sec));
+    }
+
+    function firstAdjustTime() {
+      NowTime();
+      clearInterval(firstAdjustInterval);
+      setInterval(NowTime, 1000 * 60);
+    }
+
+    function NowTime() {
+      for (let i = 0; i < phoneTimes.length; ++i) {
+        var timeSpan = phoneTimes[i];
+        var date = new Date();
+        var hour = date.getHours();
+        var min = date.getMinutes();
+        timeSpan.innerHTML = check(hour) + ":" + check(min);
+      }
+    };
+
+    function check(val) {
+      if (val < 10) {
+        return ("0" + val);
+      }
+      return (val);
+    }
+
+    // chat quote
+    const chat_quote_obverser = new IntersectionObserver((entries, observer) => {
+      entries.filter((entry) => { return entry.isIntersecting }).sort((a, b) => a.intersectionRect.y !== b.intersectionRect.y ? a.intersectionRect.y - b.intersectionRect.y : a.intersectionRect.x - b.intersectionRect.x).forEach((entry, index) => {
+          observer.unobserve(entry.target);
+          setTimeout(() => {
+            entry.target.classList.add('quote-blink');
+            setTimeout(() => {
+              entry.target.classList.remove('quote-blink');
+            }, 1000);
+          }, Math.max(100, 16) * (index + 1));
+        });
+    });
+
+    var chatQuotes = document.querySelectorAll(".chat .talk .quote");
+    chatQuotes.forEach((quote) => {
+      quote.addEventListener('click', function () {
+        var chatCellDom = document.getElementById("quote-" + quote.getAttribute("quotedCellTag"));
+        if (chatCellDom) {
+          var chatDiv = chatCellDom.parentElement;
+          var mid = chatDiv.clientHeight / 2;
+          var offsetTop = chatCellDom.offsetTop;
+          if (offsetTop > mid - chatCellDom.clientHeight / 2) {
+            chatDiv.scrollTo({
+              top: chatCellDom.offsetTop - mid + chatCellDom.clientHeight / 2,
+              behavior: "smooth"
+            });
+          } else {
+            chatDiv.scrollTo({
+              top: 0,
+              behavior: "smooth"
+            });
+          }
+          chat_quote_obverser.observe(chatCellDom);
+        }
+      });
+    });
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://gcore.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://gcore.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://gcore.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error), .with-fancybox .atk-content img:not([atk-emoticon])';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const memos = document.getElementsByClassName('ds-memos');
+    if (memos != undefined && memos.length > 0) {
+      needFancybox = true;
+    }
+    const fancybox = document.getElementsByClassName('with-fancybox');
+    if (fancybox != undefined && fancybox.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>
