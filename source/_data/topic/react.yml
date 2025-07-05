@@ -1,0 +1,4 @@
+name: react # 在面包屑导航上会显示较短的名字
+title: React # 在列表页会显示完整的专栏标题
+description: React 重点整理，包括一些框架特定的内容、特性，以及与其他框架的对比等。
+order_by: -date # 默认是按发布日期倒序排序

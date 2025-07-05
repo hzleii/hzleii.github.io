@@ -1,0 +1,131 @@
+preconnect:
+  - https://gcore.jsdelivr.net
+  - https://unpkg.com
+  - https://cdn.bootcdn.net
+
+inject:
+  head:
+    - <link rel="apple-touch-icon" sizes="180x180" href="/assets/xaoxuu/favicon/apple-touch-icon.png">
+    - <link rel="icon" type="image/png" sizes="32x32" href="/assets/xaoxuu/favicon/favicon-32x32.png">
+    - <link rel="icon" type="image/png" sizes="16x16" href="/assets/xaoxuu/favicon/favicon-16x16.png">
+    - <link rel="manifest" href="/assets/xaoxuu/favicon/site.webmanifest">
+    - <link rel="shortcut icon" href="/assets/xaoxuu/favicon/favicon.ico">
+    - <meta name="theme-color" content="#f8f8f8">
+    - <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css" media="all" />
+
+# 左侧边栏
+logo:
+  icon: /assets/head.png
+  title: 磊子
+  subtitle: 'の菜园子'
+# 导航菜单
+menubar:
+  items: 
+    - id: post
+      theme: '#1BCDFC'
+      # icon: solar:documents-bold-duotone
+      title: 博客
+      url: /
+    - id: topic
+      theme: '#3DC550'
+      # icon: solar:notebook-bookmark-bold-duotone
+      title: 专栏
+      url: /topic/
+    - id: explore
+      theme: '#FA6400'
+      # icon: solar:planet-bold-duotone
+      title: 动态
+      url: /explore/
+    - id: social
+      theme: '#F44336'
+      # icon: solar:chat-square-like-bold-duotone
+      title: 我
+      url: /about/
+
+# 顶部 tab 栏
+site_tree:
+  # 主页配置
+  home:
+    leftbar: welcome, recent
+    rightbar: news, sjtp
+    nav_tabs: # 近期发布 分类 标签 归档 and ...
+      '动态': /explore/ # 这里填写的链接要与对应页面一致，否则可能无法正确高亮
+  # 博客列表页配置
+  index_blog:
+    leftbar: recent
+    rightbar: news, sjtp
+    nav_tabs: # 近期发布 分类 标签 归档 and ...
+      '动态': /explore/ # 这里填写的链接要与对应页面一致，否则可能无法正确高亮
+  # 博客专栏列表页配置
+  index_topic:
+    # base_dir: topic # 只影响自动生成的页面路径
+    # menu_id: post # 未在 front-matter 中指定 menu_id 时，layout 为 topic 的页面默认使用这里配置的 menu_id
+    leftbar: recent
+    rightbar: toc, news
+    nav_tabs: # 近期发布 分类 标签 归档 and ...
+      '动态2': /explore/ # 这里填写的链接要与对应页面一致，否则可能无法正确高亮
+  # 文章详情页配置
+  post:
+    menu_id: post # 未在 front-matter 中指定 menu_id 时，layout 为 post 的页面默认使用这里配置的 menu_id
+    leftbar: recent, sjtp
+    rightbar: toc
+    nav_tabs: # 近期发布 分类 标签 归档 and ...
+      '动态': /explore/ # 这里填写的链接要与对应页面一致，否则可能无法正确高亮
+  # 错误页配置
+  error_page:
+    menu_id: post
+    '404': '/404.html'
+    leftbar: welcome, recent
+    rightbar: news, sjtp
+  # 其它自定义页面配置 layout: page
+  page:
+    leftbar: welcome, recent
+    rightbar: news, sjtp
+  # 博客列表页配置
+  wiki:
+    leftbar: welcome, recent
+    rightbar: news, sjtp
+    nav_tabs: # 近期发布 分类 标签 归档 and ...
+      '动态': /explore/ # 这里填写的链接要与对应页面一致，否则可能无法正确高亮
+
+article:
+  share: [wechat, weibo, email, link]
+
+# 评论
+comments:
+  service: giscus
+  # giscus
+  # https://giscus.app/zh-CN
+  giscus:
+    src: https://giscus.app/client.js
+    data-repo: hzleii/giscus # [在此输入仓库]
+    data-repo-id: R_kgDOJUTMkA# [在此输入仓库 ID]
+    data-category: 评论 # [在此输入分类名]
+    data-category-id: DIC_kwDOJUTMkM4CVoj9
+    data-mapping: pathname
+    data-strict: 0
+    data-reactions-enabled: 1
+    data-emit-metadata: 0
+    data-input-position: top # top, bottom
+    data-theme: preferred_color_scheme
+    data-lang: zh-CN
+    data-loading: lazy
+    crossorigin: anonymous
+
+
+style:
+  text-align: justify
+  smooth_scroll: false
+  codeblock:
+    scrollbar: 0px
+  font-size:
+    body: 1rem
+  font-family:
+    logo: '"LXGW WenKai Screen", system-ui, "Microsoft Yahei", "Segoe UI", -apple-system, Roboto, Ubuntu, "Helvetica Neue", Arial, "WenQuanYi Micro Hei", sans-serif'
+    body: '"LXGW WenKai Screen", system-ui, "Microsoft Yahei", "Segoe UI", -apple-system, Roboto, Ubuntu, "Helvetica Neue", Arial, "WenQuanYi Micro Hei", sans-serif'
+    code: '"LXGW WenKai Screen", Menlo, Monaco, Consolas, system-ui, "Courier New", monospace, sans-serif'
+    codeblock: 'Menlo, Monaco, Consolas, system-ui, "Courier New", monospace, sans-serif'
+
+open_graph:
+  enable: true
+  twitter_id: # for open_graph meta

@@ -1,0 +1,83 @@
+# 每日简报
+news:
+  layout: timeline
+  title: 每日简报
+  api: https://s.dusays.com/api/v1/memo/all?limit=2
+  type: memos
+  hide: footer
+
+
+# 近期动态
+timeline:
+  layout: timeline
+  title: 近期动态
+  api: https://api.github.com/repos/hzleii/timeline/issues?direction=desc&per_page=6
+  user: # 是否过滤只显示某个人发布的内容，如果要筛选多人，用英文逗号隔开
+  hide: # title,footer # 隐藏标题或底部 # 此功能需要 Stellar v1.13.0
+
+
+# 欢迎
+welcome:
+  layout: markdown
+  title: 欢迎欢迎
+  linklist: # 与 linklist 组件写法相同
+    columns: 1 
+    items:
+      - icon: '<svg...></svg>' # 或者 icons.yml 中设置的 icon 名称
+        title: 关于我
+        url: /about/
+  content: |
+    **很高兴您这么忙还来看我！**
+
+
+# 最近更新
+recent:
+  layout: recent
+  rss: # /atom.xml # npm i hexo-generator-feed
+  limit: 6 # Count of posts
+
+
+# 文章目录
+toc:
+  layout: toc
+  list_number: true # 是否显示序号
+  min_depth: 2 # 建议不要低于 2 即从 H2 标签开始解析（H1标签用于文章大标题）
+  max_depth: 5 # 5 代表最多解析到 H5 标签
+  fallback: news # Use a backup widget when toc does not exist.
+  collapse: auto # true / false / auto (始终折叠/不折叠/自动折叠)
+
+
+# 随机图片
+sjtp:
+  layout: markdown
+  title: 随机图片
+  content: |
+    ![](https://birdteam.net/heisi.php)
+
+
+# 评论
+comments:
+  service: giscus
+  # giscus
+  # https://giscus.app/zh-CN
+  giscus:
+    src: https://giscus.app/client.js
+    data-repo: hzleii/giscus # [在此输入仓库]
+    data-repo-id: R_kgDOJUTMkA# [在此输入仓库 ID]
+    data-category: 评论 # [在此输入分类名]
+    data-category-id: DIC_kwDOJUTMkM4CVoj9
+    data-mapping: pathname
+    data-strict: 0
+    data-reactions-enabled: 1
+    data-emit-metadata: 0
+    data-input-position: top # top, bottom
+    data-theme: preferred_color_scheme
+    data-lang: zh-CN
+    data-loading: lazy
+    crossorigin: anonymous
+
+
+
+
+
+

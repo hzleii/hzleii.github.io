@@ -1,0 +1,4 @@
+name: leetcode # 在面包屑导航上会显示较短的名字
+title: LeetCode # 在列表页会显示完整的专栏标题
+description: 本笔记收录了我的部分 LeetCode 解题过程，笔记不定期更新，寻找题目请使用搜索。
+order_by: -date # 默认是按发布日期倒序排序

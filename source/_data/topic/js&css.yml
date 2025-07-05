@@ -1,0 +1,4 @@
+name: jscss # 在面包屑导航上会显示较短的名字
+title: JavaScript & CSS # 在列表页会显示完整的专栏标题
+description: JavaScript 和 CSS 学习内容。。
+order_by: -date # 默认是按发布日期倒序排序
