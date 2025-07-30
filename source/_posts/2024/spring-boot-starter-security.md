@@ -4,8 +4,10 @@ date: 2024-04-30
 description: '自定义Spring-boot-starter-security流程'
 # topic: leetcode
 author: hzlei
-banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/spring-boot-starter-security/index.webp
-cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/spring-boot-starter-security/index.webp
+# banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/spring-boot-starter-security/index.webp
+# cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/spring-boot-starter-security/index.webp
+banner: https://gitee.com/hzleii/imgs/raw/main/stellar/post/2024/spring-boot-starter-security/index.webp
+cover: https://gitee.com/hzleii/imgs/raw/main/stellar/post/2024/spring-boot-starter-security/index.webp
 nav_tabs: true
 article:
   type: tech # tech/story

@@ -4,8 +4,10 @@ date: 2024-03-25
 description: 'dubbo3.0 服务导入导出原理。'
 # topic: leetcode
 author: hzlei
-banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/double-v3/index.webp
-cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/double-v3/index.webp
+# banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/double-v3/index.webp
+# cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/double-v3/index.webp
+banner: https://gitee.com/hzleii/imgs/raw/main/stellar/post/2024/double-v3/index.webp
+cover: https://gitee.com/hzleii/imgs/raw/main/stellar/post/2024/double-v3/index.webp
 nav_tabs: true
 article:
   type: tech # tech/story
@@ -232,7 +234,7 @@ dubbo:
 
 确定好实例信息后之后，就进行最终的应用注册了，就把实例信息存入注册中心的 `/services/应用名`，目录下：
 
-![目录](https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/ruoyi-rce/https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/double-v3/1.webp)
+![目录](https://gitee.com/hzleii/imgs/raw/main/stellar/post/2024/double-v3/1.webp)
 
 可以看出 services 节点下存的是应用名，应用名的节点下存的是实例 ip 和实例 port，而 ip 和 port 这个节点中的内容就是实例的一些基本信息。
 
@@ -253,7 +255,7 @@ dubbo:
 
 在 Dubbo2.7 中就有了元数据中心，它其实就是用来减轻注册中心的压力的，Dubbo 会把服务信息完整的存一份到元数据中心，元数据中心也可以用 Zookeeper来实现，在暴露完元数据服务之后，在注册实例信息到注册中心之前，就会把 MetadataInfo 存入元数据中心，比如：
 
-![示例](https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/ruoyi-rce/https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2024/double-v3/2.webp)
+![示例](https://gitee.com/hzleii/imgs/raw/main/stellar/post/2024/double-v3/2.webp)
 
 节点内容为：
 

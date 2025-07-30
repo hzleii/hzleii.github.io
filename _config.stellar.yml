@@ -16,7 +16,8 @@ inject:
 
 # 左侧边栏
 logo:
-  icon: https://cdn.jsdelivr.net/gh/hzleii/imgs/head100x100.png
+  # icon: https://cdn.jsdelivr.net/gh/hzleii/imgs/head100x100.png
+  icon: https://gitee.com/hzleii/imgs/raw/main/head100x100.png
   title: 磊子
   subtitle: 'の菜园子'
 # 导航菜单

@@ -6,8 +6,10 @@ breadcrumb: false
 nav_tabs: true
 wiki: explore
 title: 近期动态
-banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/explore.webp
-cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/explore.webp
+# banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/explore.webp
+# cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/explore.webp
+banner: https://gitee.com/hzleii/imgs/raw/main/stellar/explore.webp
+cover: https://gitee.com/hzleii/imgs/raw/main/stellar/explore.webp
 ---
 
 

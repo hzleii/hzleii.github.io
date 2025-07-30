@@ -4,8 +4,10 @@ date: 2019-07-10
 topic: js&css
 description: 'CSS 重难点整理，包括元素类型、盒模型、选择器、布局等内容。'
 author: hzlei
-banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2019/jscss/CSS.webp
-cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2019/jscss/CSS.webp
+# banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2019/jscss/CSS.webp
+# cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2019/jscss/CSS.webp
+banner: https://gitee.com/hzleii/imgs/raw/main/stellar/post/2019/jscss/CSS.webp
+cover: https://gitee.com/hzleii/imgs/raw/main/stellar/post/2019/jscss/CSS.webp
 nav_tabs: true
 article:
   type: tech # tech/story

@@ -4,8 +4,10 @@ date: 2019-07-23
 description: 'JavaScript 常见手写，包括防抖、节流、柯里、扁平、去重等各类手写。'
 topic: js&css
 author: hzlei
-banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2019/jscss/JavaScript.webp
-cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2019/jscss/JavaScript.webp
+# banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2019/jscss/JavaScript.webp
+# cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2019/jscss/JavaScript.webp
+banner: https://gitee.com/hzleii/imgs/raw/main/stellar/post/2019/jscss/JavaScript.webp
+cover: https://gitee.com/hzleii/imgs/raw/main/stellar/post/2019/jscss/JavaScript.webp
 nav_tabs: true
 article:
   type: tech # tech/story

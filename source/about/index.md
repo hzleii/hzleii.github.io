@@ -6,8 +6,10 @@ breadcrumb: false
 nav_tabs: true
 wiki: explore
 title: 磊子
-banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/hzlei.webp
-cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/hzlei.webp
+# banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/hzlei.webp
+# cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/hzlei.webp
+banner: https://gitee.com/hzleii/imgs/raw/main/stellar/hzlei.webp
+cover: https://gitee.com/hzleii/imgs/raw/main/stellar/hzlei.webp
 ---
 
 
@@ -23,17 +25,33 @@ cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/hzlei.webp
 {% box child:tabs %}
 {% tabs %}
 
-<!-- tab  影视 -->
+<!-- tab  喜欢的影视 -->
 
-- 漫威的影视作品、X-Men 系列。
-- 科幻类，例如：[Interstellar](https://movie.douban.com/subject/1889243/)、[Prometheus](https://movie.douban.com/subject/3771562/)、[The Expanse](https://movie.douban.com/subject/25926851/)、[I, Robot](https://movie.douban.com/subject/1308843/)、[WALL·E](https://movie.douban.com/subject/2131459/)
-- 诺兰大导演的作品，例如：[Inception](https://movie.douban.com/subject/3541415/)、[The Prestige](https://movie.douban.com/subject/1780330/)
+- 漫威的影视作品，例如：
 
+{% posters movies1 %}
 
-<!-- tab 音乐 -->
+- 科幻悬疑惊悚类，例如：
 
-- 赵雷
-- 周杰伦
+{% posters movies2 %}
+
+- 诺兰大导演的作品，例如：
+
+{% posters movies3 %}
+
+- 动画类，比如：
+
+{% posters movies4 %}
+
+- 追番：
+
+{% posters movies5 %}
+
+<!-- tab 喜欢的音乐人 -->
+
+排名不分先后：
+
+{% albums musician %}
 
 
 <!-- tab 其他 -->

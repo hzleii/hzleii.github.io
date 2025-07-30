@@ -4,8 +4,10 @@ date: 2019-08-03
 description: 'Vue.js 重点整理，包括一些框架特定的内容、特性，以及与其他框架的对比等。'
 topic: vuejs
 author: hzlei
-banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2019/vuejs/vuejs.webp
-cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2019/vuejs/vuejs.webp
+# banner: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2019/vuejs/vuejs.webp
+# cover: https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/post/2019/vuejs/vuejs.webp
+banner: https://gitee.com/hzleii/imgs/raw/main/stellar/post/2019/vuejs/vuejs.webp
+cover: https://gitee.com/hzleii/imgs/raw/main/stellar/post/2019/vuejs/vuejs.webp
 nav_tabs: true
 article:
   type: tech # tech/story
