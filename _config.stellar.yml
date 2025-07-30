@@ -58,6 +58,7 @@ site_tree:
     rightbar: news, sjtp
     nav_tabs: # 近期发布 分类 标签 归档 and ...
       '动态': /explore/ # 这里填写的链接要与对应页面一致，否则可能无法正确高亮
+      '我': /about/
   # 博客专栏列表页配置
   index_topic:
     # base_dir: topic # 只影响自动生成的页面路径
@@ -73,6 +74,7 @@ site_tree:
     rightbar: toc
     nav_tabs: # 近期发布 分类 标签 归档 and ...
       '动态': /explore/ # 这里填写的链接要与对应页面一致，否则可能无法正确高亮
+      '我': /about/
   # 错误页配置
   error_page:
     menu_id: post
@@ -89,6 +91,7 @@ site_tree:
     rightbar: news, sjtp
     nav_tabs: # 近期发布 分类 标签 归档 and ...
       '动态': /explore/ # 这里填写的链接要与对应页面一致，否则可能无法正确高亮
+      '我': /about/
 
 article:
   share: [wechat, weibo, email, link]
