@@ -12,6 +12,7 @@ inject:
     - <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/hzleii/imgs/stellar/xaoxuu/favicon/favicon.ico">
     - <meta name="theme-color" content="#f8f8f8">
     - <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css" media="all" />
+    - <meta name="referrer" content="no-referrer" />
 
 # 左侧边栏
 logo:

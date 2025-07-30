@@ -2,7 +2,7 @@
 news:
   layout: timeline
   title: 每日简报
-  api: https://s.dusays.com/api/v1/memo/all?limit=2
+  api: https://s.dusays.com/api/v1/memo/all?limit=1
   type: memos
   hide: footer
 
