@@ -13,4 +13,4 @@ cover: https://gitee.com/hzleii/imgs/raw/main/stellar/explore.webp
 ---
 
 
-{% timeline api:https://api.github.com/repos/hzleii/timeline/issues?direction=desc&per_page=5 %}{% endtimeline %}
+{% timeline api:https://api.github.com/repos/hzleii/timeline/issues?direction=desc %}{% endtimeline %}
