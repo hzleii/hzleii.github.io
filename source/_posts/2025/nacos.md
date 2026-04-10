@@ -32,7 +32,7 @@ poster: # 海报（可选，全图封面卡片）
 
 docker搭建集群参考：https://github.com/nacos-group/nacos-docker
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/1.png 环境搭建 %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/1.png 环境搭建 ratio:2395/517 %}
 
 
 ## 漏洞分析
@@ -43,12 +43,12 @@ docker搭建集群参考：https://github.com/nacos-group/nacos-docker
 
 当nacos以集群模式启动时，存在一个名为naming_persistent_service的Group
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/2.png naming_persistent_service#Group %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/2.png naming_persistent_service#Group ratio:1029/949 %}
 
 注意，{% mark 此时的leader为nacos2:7848,这个会变的 color:red %}，
 在Nacos Hessian 反序列化漏洞的调试中知道，只有leader节点才会进行后续的操作。
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/3.png isLeader %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/3.png isLeader ratio:661/143 %}
 
 在调试分析这个漏洞的过程中发现，在向leader发包后，下一次，leader就会变为其他节点。反正就是naming_persistent_service下的leader是哪个，就向哪个节点发送请求即可，不需要重启
 
@@ -74,29 +74,29 @@ run:750, Thread (java.lang)
 
 来到`BasePersistentServiceProcessor#onApply`
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/4.png BasePersistentServiceProcessor#onApply %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/4.png BasePersistentServiceProcessor#onApply ratio:1319/651 %}
 
 首先对传入的data进行反序列化为一个BatchWriteRequest对象，然后再获取操作op进入不同的方法处理，
 如果 op=="Write"，则进入NamingKvStorage#batchPut
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/5.png NamingKvStorage#batchPut %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/5.png NamingKvStorage#batchPut ratio:1167/341 %}
 
 这里只是简单的遍历一下列表，然后就丢给put方法处理
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/6.png put %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/6.png put ratio:969/323 %}
 
 this.getStorage()只是返回一个KvStorage对象，然后进入KvStorage#put
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/7.png KvStorage#put %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/7.png KvStorage#put ratio:1121/557 %}
 
 这里一目了然了，而且参数可控，
 需要注意的是这个this.baseDir的当前目录为/home/nacos/data/naming/data，可以目录穿越
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/8.png this#baseDir %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/8.png this#baseDir ratio:951/139 %}
 
 回到BasePersistentServiceProcessor#onApply，构造数据
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/9.png BasePersistentServiceProcessor#onApply %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/9.png BasePersistentServiceProcessor#onApply ratio:1319/651 %}
 
 需要一个BatchWriteRequest对象，并序列化
 
@@ -117,7 +117,7 @@ send(address, serializer.serialize(request));
 op的控制就简单了，在构造WriteRequest对象时候，加一个setOperation("Write")即可，
 send方法是发送请求，参考{% hashtag Y4er https://y4er.com/posts/nacos-hessian-rce/ %}写的，复制+修改
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/10.png send %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/10.png send ratio:1902/548 %}
 
 ```java
 public static void send(String addr, byte[] payload) throws Exception {  
@@ -156,20 +156,20 @@ public static void main(String[] args) throws Exception {
 如果{% mark op==Delete color:red %}是不是就可以删除任意文件了？
 跟一下
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/11.png BasePersistentServiceProcessor#onApply %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/11.png BasePersistentServiceProcessor#onApply ratio:1319/651 %}
 
 根据batchDelete，来到NamingKvStorage的batchDelete
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/12.png batchDelete %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/12.png batchDelete ratio:843/282 %}
 
 继续跟进delete()
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/13.png delete %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/13.png delete ratio:919/321 %}
 
 这里的delete再跟进，也是一目了然，
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/14.png DiskUtils#deleteFile %}
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/15.png deleteFile %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/14.png DiskUtils#deleteFile ratio:706/364 %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/15.png deleteFile ratio:745/147 %}
 
 这个POC和上面任意文件写入的一样，只有把.setOperation("Write")改为.setOperation("Delete")即可
 
@@ -180,24 +180,24 @@ public static void main(String[] args) throws Exception {
 
 在处理请求的过程中，如果是ReadRequest则会调用该Group所使用的Processor的onRequest方法
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/16.png Processor#onRequest %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/16.png Processor#onRequest ratio:957/296 %}
 
 因为Group为naming_persistent_service，还是BasePersistentServiceProcessor处理，
 来到BasePersistentServiceProcessor的onRequest方法
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/17.png BasePersistentServiceProcessor#onRequest %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/17.png BasePersistentServiceProcessor#onRequest ratio:1767/402 %}
 
 处理的套路和前面的差不多，将数据反序列化为List后丢给NamingKvStorage#batchGet处理
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/18.png NamingKvStorage#batchGet %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/18.png NamingKvStorage#batchGet ratio:973/424 %}
 
 这里也是变量，然后丢给get处理，跟进
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/19.png get %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/19.png get ratio:1042/424 %}
 
 又是这个storage，再跟进
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/20.png storage %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/20.png storage ratio:721/584 %}
 
 再这个get方法中，如果文件存在，则读取，并返回读取的内容，返回到onRequest,通过response发送到客户端
 
@@ -237,23 +237,23 @@ public static void main(String[] args) throws Exception {
 
 任意文件写入：写入pwn.txt
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/21.png pwn.txt %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/21.png pwn.txt ratio:484/129 %}
 
 任意文件删除：删除掉刚刚写入的pwn.txt
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/22.png pwn.txt %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/22.png pwn.txt ratio:538/155 %}
 
 任意文件读取：读取/proc/self/environ环境变量
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/23.png pwn.txt %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/23.png pwn.txt ratio:2176/280 %}
 
 其中keys是文件名，values是文件内容，base64解码
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/24.png base64解码 %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/24.png base64解码 ratio:750/276 %}
 
 文件内容：
 
-{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/25.png 文件内容 %}
+{% image https://gitee.com/hzleii/imgs/raw/main/stellar/post/2025/nacos/25.png 文件内容 ratio:1851/469 %}
 
 
 ## 参考
